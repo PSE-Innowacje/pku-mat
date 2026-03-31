@@ -1,0 +1,24 @@
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+nav a {
+  text-decoration: none;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+nav a:hover {
+  color: #646cff;
+}

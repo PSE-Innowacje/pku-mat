@@ -1,0 +1,45 @@
+services:
+
+  oracle-db:
+    image: gvenzl/oracle-free:23-slim
+    container_name: pku-oracle-db
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: pku
+      APP_USER_PASSWORD: pku
+    volumes:
+      - ./db/users/:/container-entrypoint-initdb.d/
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  backend:
+    build:
+      context: ./backend
+    container_name: pku-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@//oracle-db:1521/FREEPDB1
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: pku-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  oracle-data:

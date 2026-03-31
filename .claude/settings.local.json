@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(curl -sL -o C:/Users/ca111/github/pku-mat/backend/gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar)",
+      "Bash(find C:/Users/ca111/github/pku-mat/backend/src/main/kotlin -type f -name *.kt)"
+    ]
+  }
+}
