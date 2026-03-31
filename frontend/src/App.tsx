@@ -1,37 +1,38 @@
-import { Routes, Route, Link } from 'react-router-dom';
-
-function Home() {
-  return (
-    <div>
-      <h1>Home</h1>
-      <p>Welcome to PKU Mat.</p>
-    </div>
-  );
-}
-
-function About() {
-  return (
-    <div>
-      <h1>About</h1>
-      <p>This is the about page.</p>
-    </div>
-  );
-}
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import DeclarationFormPage from './pages/DeclarationFormPage';
+import DeclarationDetailPage from './pages/DeclarationDetailPage';
+import ConfirmationPage from './pages/ConfirmationPage';
 
 function App() {
   return (
-    <div className="app">
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-      </nav>
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
-      </main>
-    </div>
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route
+              path="/declarations/new/:feeType"
+              element={<DeclarationFormPage />}
+            />
+            <Route
+              path="/declarations/:id/confirmation"
+              element={<ConfirmationPage />}
+            />
+            <Route
+              path="/declarations/:id"
+              element={<DeclarationDetailPage />}
+            />
+          </Route>
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }
 

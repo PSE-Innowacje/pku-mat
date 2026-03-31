@@ -10,11 +10,11 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-  }
-  // ,
-  // test: {
-  //   globals: true,
-  //   environment: 'jsdom',
-  //   setupFiles: './src/setupTests.ts',
-  // },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.ts',
+    exclude: ['e2e/**', 'node_modules/**'],
+  },
 });

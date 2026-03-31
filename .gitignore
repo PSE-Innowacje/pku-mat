@@ -30,3 +30,8 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# Playwright
+chrome/
+frontend/playwright-report/
+frontend/test-results/
