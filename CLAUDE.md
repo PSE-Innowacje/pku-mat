@@ -8,23 +8,24 @@ PKU-MAT is a full-stack web application for submitting settlement declarations (
 
 ## Architecture
 
-- **Frontend** (`frontend/`): React 18 + TypeScript, built with Vite. Dev server on port 5173, proxies `/api/*` to backend at `localhost:8080`.
+- **Frontend** (`frontend/`): React 18 + TypeScript, built with Vite. Dev server on port 5173, proxies `/api/*` to backend at `localhost:8080`. In Docker, served by nginx on port 3000 with `proxy_pass` to backend container.
 - **Backend** (`backend/`): Kotlin + Spring Boot 3.2.5 with Spring Data JDBC and Spring Security. Runs on port 8080. Package: `pl.pku.mat`.
 - **Database** (`db/`): Oracle 23 Free (service: FREEPDB1, user: `pku`/`pku`). All DDL and seed data in `db/users/init.sql` (auto-executed on first container start).
 - **API convention**: All REST endpoints are prefixed with `/api/` (e.g., `/api/health`, `/api/dashboard`).
 - **Spring profiles**: `dev` (Docker networking with `oracle-db` hostname), `test` (datasource, JDBC repos, and security excluded — repositories mocked in tests).
+- **CORS**: Backend allows origins `http://localhost:5173` (Vite dev) and `http://localhost:3000` (Docker nginx). Configured in `SecurityConfig.kt`.
 
 ## Backend Package Structure
 
 ```
 pl.pku.mat/
 ├── config/          # SecurityConfig, FormFieldConfig, GlobalExceptionHandler
-├── controller/      # AuthController, DashboardController, DeclarationController, HealthController
+├── controller/      # AuthController, BillingPeriodController, DashboardController, DeclarationController, HealthController
 ├── dto/             # Request/response DTOs
 ├── entity/          # Spring Data JDBC entities (@Table)
 ├── repository/      # CrudRepository interfaces
 ├── security/        # CustomUserDetailsService
-└── service/         # DeclarationService, DeclarationNumberGenerator, JsonExportService
+└── service/         # BillingPeriodService, DeclarationService, DeclarationNumberGenerator, JsonExportService
 ```
 
 ## Frontend Structure
@@ -46,11 +47,12 @@ src/
 - `GET /api/auth/me` — returns current user from session
 
 ### Domain (authenticated)
-- `GET /api/dashboard` — fee declarations status for current month
+- `GET /api/dashboard` — billing period declarations status for current month (per fee type × period)
+- `GET /api/billing-periods?feeType={code}&year={y}[&month={m}]` — list billing periods
 - `GET /api/declarations` — list all declarations for user's contractor
 - `GET /api/declarations/{id}` — single declaration with items
 - `GET /api/declarations/form?feeType={code}` — form field definitions for fee type
-- `POST /api/declarations` — submit declaration (saves to DB + exports JSON file)
+- `POST /api/declarations` — submit declaration (`{feeTypeCode, billingPeriodId, items, comment}`), saves to DB with JSON in `json_content` CLOB column
 
 ## Common Commands
 
@@ -81,8 +83,8 @@ docker compose -f docker-compose.dev.yml down -v  # Reset DB (deletes data)
 
 ## Testing
 
-- **Frontend unit tests**: Vitest with React Testing Library, jsdom environment. Tests in `src/__tests__/`. Setup file: `src/setupTests.ts`. E2e specs excluded from Vitest via config.
-- **Frontend e2e tests**: Playwright, specs in `e2e/`. Config auto-starts Vite dev server.
+- **Frontend unit tests**: Vitest with React Testing Library, jsdom environment. Tests in `src/__tests__/`. Setup file: `src/setupTests.ts`. E2e specs excluded from Vitest via config. Vitest config is in separate `vitest.config.ts` (not in `vite.config.ts`) to avoid TypeScript type conflicts during `tsc -b` build.
+- **Frontend e2e tests**: Playwright (Chromium), specs in `e2e/`. Config auto-starts Vite dev server. Install browsers with `npx playwright install chromium`. Tests cover login flows (OSDp, Wytworca, invalid credentials).
 - **Backend tests**: JUnit 5 + Spring Boot Test. Uses `test` profile which excludes DataSource, JDBC repositories, and Security auto-configuration. Repositories are mocked with `@MockBean`.
 
 ## Linting & Formatting
@@ -92,10 +94,10 @@ docker compose -f docker-compose.dev.yml down -v  # Reset DB (deletes data)
 
 ## Database
 
-Oracle connection: `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`. In Docker the hostname is `oracle-db` (via `dev` profile). The `gvenzl/oracle-free:23-slim` image auto-runs scripts from mounted `db/users/` on first start.
+Oracle connection: `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`. In Docker the hostname is `oracle-db` (service name, via `dev` profile); container name is `pku-oracle-db`. The `gvenzl/oracle-free:23-slim` image auto-runs scripts from mounted `db/users/` on first start. If init.sql was not auto-executed, run manually: `docker exec -i pku-oracle-db sqlplus -S pku/pku@//localhost:1521/FREEPDB1 < db/users/init.sql`.
 
 ### Tables
-`roles`, `users`, `contractor_types`, `fee_types`, `contractors`, `contractor_fee_types`, `declarations`, `declaration_items`
+`roles`, `users`, `contractor_types`, `fee_types`, `contractors`, `contractor_fee_types`, `billing_periods`, `declarations`, `declaration_items`
 
 ### Seed Data (test credentials)
 | Login | Password | Role |
@@ -111,7 +113,8 @@ Oracle connection: `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`. In Docker the 
 - **Declaration statuses**: NIE_ZLOZONE, ROBOCZE, ZLOZONE
 - **Declaration number format**: `OSW/{fee_type}/{contractor_short}/{year}/{month}/{sub_period}/{version}`
 - **Form field definitions**: Hardcoded in `FormFieldConfig.kt` per fee type x contractor type combination
-- **JSON export**: Submitted declarations are exported to `./declarations-json/` (configurable via `app.declarations.json-dir`)
+- **JSON export**: Submitted declarations are serialized to JSON and stored in the `json_content` CLOB column of the `declarations` table
+- **Billing periods**: Defined per fee type × year × month × sub_period. OP has monthly periods (sub_period=1), OZE has 10-day periods (3 sub_periods per month). Each period has `start_date`, `end_date`, and `submission_deadline` (default: end_date + 5 days). Declarations reference a `billing_period_id`.
 
 ## Language
 

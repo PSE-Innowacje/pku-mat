@@ -6,18 +6,14 @@ import pl.pku.mat.entity.DeclarationEntity
 
 interface DeclarationRepository : CrudRepository<DeclarationEntity, Long> {
 
-    fun findByContractorIdAndYearAndMonth(contractorId: Long, year: Int, month: Int): List<DeclarationEntity>
-
     fun findByContractorId(contractorId: Long): List<DeclarationEntity>
 
     @Query("""
         SELECT * FROM DECLARATIONS
         WHERE contractor_id = :contractorId
-          AND fee_type_id = :feeTypeId
-          AND year = :year
-          AND month = :month
+          AND billing_period_id = :billingPeriodId
         ORDER BY version DESC
         FETCH FIRST 1 ROWS ONLY
     """)
-    fun findLatestVersion(contractorId: Long, feeTypeId: Long, year: Int, month: Int): DeclarationEntity?
+    fun findLatestByBillingPeriod(contractorId: Long, billingPeriodId: Long): DeclarationEntity?
 }

@@ -25,7 +25,7 @@ export default function DeclarationDetailPage() {
     }
   }, [id]);
 
-  if (error) return <div className="error-banner">{error}</div>;
+if (error) return <div className="error-banner">{error}</div>;
   if (!declaration) return <div className="loading">Ladowanie...</div>;
 
   return (

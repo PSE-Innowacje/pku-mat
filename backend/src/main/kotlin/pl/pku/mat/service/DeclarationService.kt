@@ -20,6 +20,7 @@ class DeclarationService(
     private val feeTypeRepository: FeeTypeRepository,
     private val declarationRepository: DeclarationRepository,
     private val declarationItemRepository: DeclarationItemRepository,
+    private val billingPeriodRepository: BillingPeriodRepository,
     private val numberGenerator: DeclarationNumberGenerator,
     private val jsonExportService: JsonExportService
 ) {
@@ -35,21 +36,30 @@ class DeclarationService(
         val year = now.year
         val month = now.monthValue
 
-        val feeDeclarations = feeTypeMappings.map { mapping ->
+        val periodDeclarations = feeTypeMappings.flatMap { mapping ->
             val feeType = feeTypeRepository.findById(mapping.feeTypeId)
                 .orElseThrow { NoSuchElementException("Nie znaleziono typu oplaty") }
 
-            val latestDeclaration = declarationRepository.findLatestVersion(
-                contractor.id, feeType.id!!, year, month
-            )
+            val periods = billingPeriodRepository.findByFeeTypeIdAndYearAndMonth(feeType.id!!, year, month)
 
-            FeeDeclarationStatus(
-                feeTypeCode = feeType.code,
-                feeTypeName = feeType.name,
-                status = latestDeclaration?.status ?: "NIE_ZLOZONE",
-                declarationId = latestDeclaration?.id,
-                declarationNumber = latestDeclaration?.declarationNumber
-            )
+            periods.map { period ->
+                val latestDeclaration = declarationRepository.findLatestByBillingPeriod(
+                    contractor.id, period.id!!
+                )
+
+                PeriodDeclarationStatus(
+                    billingPeriodId = period.id,
+                    feeTypeCode = feeType.code,
+                    feeTypeName = feeType.name,
+                    subPeriod = period.subPeriod,
+                    startDate = period.startDate,
+                    endDate = period.endDate,
+                    submissionDeadline = period.submissionDeadline,
+                    status = latestDeclaration?.status ?: "NIE_ZLOZONE",
+                    declarationId = latestDeclaration?.id,
+                    declarationNumber = latestDeclaration?.declarationNumber
+                )
+            }
         }
 
         return DashboardResponse(
@@ -57,7 +67,7 @@ class DeclarationService(
             contractorType = contractorType.code,
             year = year,
             month = month,
-            feeDeclarations = feeDeclarations
+            periodDeclarations = periodDeclarations
         )
     }
 
@@ -90,6 +100,12 @@ class DeclarationService(
             .orElseThrow { NoSuchElementException("Nie znaleziono typu kontrahenta") }
         val feeType = feeTypeRepository.findByCode(request.feeTypeCode)
             ?: throw NoSuchElementException("Nie znaleziono typu oplaty: ${request.feeTypeCode}")
+        val billingPeriod = billingPeriodRepository.findById(request.billingPeriodId)
+            .orElseThrow { NoSuchElementException("Nie znaleziono okresu rozliczeniowego: ${request.billingPeriodId}") }
+
+        require(billingPeriod.feeTypeId == feeType.id) {
+            "Okres rozliczeniowy nie odpowiada typowi oplaty"
+        }
 
         // Validate fields
         val allowedFields = FormFieldDefinitions.getFields(feeType.code, contractorType.code)
@@ -107,13 +123,15 @@ class DeclarationService(
         }
 
         // Determine version
-        val latestVersion = declarationRepository.findLatestVersion(
-            contractor.id!!, feeType.id!!, request.year, request.month
+        val latestDeclaration = declarationRepository.findLatestByBillingPeriod(
+            contractor.id!!, billingPeriod.id!!
         )
-        val newVersion = (latestVersion?.version ?: 0) + 1
+        val newVersion = (latestDeclaration?.version ?: 0) + 1
 
         val declarationNumber = numberGenerator.generate(
-            feeType.code, contractor.shortName, request.year, request.month, request.subPeriod, newVersion
+            feeType.code, contractor.shortName,
+            billingPeriod.year, billingPeriod.month, billingPeriod.subPeriod,
+            newVersion
         )
 
         val now = Instant.now()
@@ -121,16 +139,17 @@ class DeclarationService(
             DeclarationEntity(
                 declarationNumber = declarationNumber,
                 contractorId = contractor.id,
-                feeTypeId = feeType.id,
-                year = request.year,
-                month = request.month,
-                subPeriod = request.subPeriod,
+                feeTypeId = feeType.id!!,
+                year = billingPeriod.year,
+                month = billingPeriod.month,
+                subPeriod = billingPeriod.subPeriod,
                 version = newVersion,
                 status = "ZLOZONE",
                 remarks = request.comment,
                 createdAt = now,
                 submittedAt = now,
-                createdBy = userId
+                createdBy = userId,
+                billingPeriodId = billingPeriod.id
             )
         )
 
@@ -147,9 +166,9 @@ class DeclarationService(
 
         val response = buildDeclarationResponse(declaration, feeType.code, feeType.name, contractor.fullName, user.displayName)
 
-        // Export to JSON
-        val jsonPath = jsonExportService.export(response)
-        declarationRepository.save(declaration.copy(jsonFilePath = jsonPath))
+        // Save JSON content to database
+        val jsonContent = jsonExportService.serialize(response)
+        declarationRepository.save(declaration.copy(jsonContent = jsonContent))
 
         return response
     }

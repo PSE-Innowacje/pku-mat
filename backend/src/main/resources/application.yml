@@ -11,6 +11,3 @@ spring:
     init:
       mode: never
 
-app:
-  declarations:
-    json-dir: ./declarations-json

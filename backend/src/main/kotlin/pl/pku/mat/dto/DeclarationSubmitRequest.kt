@@ -4,9 +4,7 @@ import java.math.BigDecimal
 
 data class DeclarationSubmitRequest(
     val feeTypeCode: String,
-    val year: Int,
-    val month: Int,
-    val subPeriod: Int = 1,
+    val billingPeriodId: Long,
     val items: Map<String, BigDecimal>,
     val comment: String? = null
 )

@@ -16,8 +16,9 @@ data class DeclarationEntity(
     val version: Int = 1,
     val status: String = "NIE_ZLOZONE",
     val remarks: String? = null,
-    val jsonFilePath: String? = null,
+    val jsonContent: String? = null,
     val createdAt: Instant? = null,
     val submittedAt: Instant? = null,
-    val createdBy: Long
+    val createdBy: Long,
+    val billingPeriodId: Long? = null
 )

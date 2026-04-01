@@ -5,9 +5,10 @@ System do skladania oswiadczen rozliczeniowych w ramach oplat przesylowych i poz
 ## Funkcjonalnosc
 
 - Logowanie z rolami (Administrator, Kontrahent)
-- Dashboard z lista oswiadczen do zlozenia w biezacym miesiacu
-- Skladanie oswiadczen rozliczeniowych (dynamiczny formularz wg typu oplaty i kontrahenta)
-- Eksport zlozonych oswiadczen do plikow JSON
+- Dashboard z lista okresow rozliczeniowych i statusami oswiadczen w biezacym miesiacu
+- Rejestr okresow rozliczeniowych (miesieczne dla OP, dziesieciodniowe dla OZE)
+- Skladanie oswiadczen rozliczeniowych na kazdy okres (dynamiczny formularz wg typu oplaty i kontrahenta)
+- Zapis zlozonych oswiadczen w formacie JSON w bazie danych
 - Podglad zlozonych oswiadczen
 
 ### Obslugiwane typy
@@ -21,7 +22,7 @@ System do skladania oswiadczen rozliczeniowych w ramach oplat przesylowych i poz
 
 | Warstwa    | Technologia                          |
 |------------|--------------------------------------|
-| Frontend   | React 18 + TypeScript (Vite, port 5173) |
+| Frontend   | React 18 + TypeScript (Vite, port 5173 / nginx, port 3000 w Docker) |
 | Backend    | Kotlin + Spring Boot 3.2.5 (port 8080)  |
 | Baza danych| Oracle Database 23 Free              |
 | Bezpieczenstwo | Spring Security (sesje)           |
@@ -45,7 +46,7 @@ Po uruchomieniu:
 
 | Usluga   | Adres                          |
 |----------|--------------------------------|
-| Frontend | http://localhost:3000           |
+| Frontend | http://localhost:3000 (nginx z proxy do backendu) |
 | Backend  | http://localhost:8080           |
 | Oracle   | localhost:1521 (SID: FREEPDB1) |
 
@@ -71,7 +72,13 @@ W trybie lokalnym uruchamiamy tylko baze danych w Dockerze, a frontend i backend
 docker compose -f docker-compose.dev.yml up -d
 ```
 
-Baza bedzie dostepna pod `localhost:1521`. Uzytkownik `pku` z haslem `pku` zostanie utworzony automatycznie. Tabele i dane testowe sa tworzone przez skrypt `db/users/init.sql`.
+Baza bedzie dostepna pod `localhost:1521`. Uzytkownik `pku` z haslem `pku` zostanie utworzony automatycznie. Tabele i dane testowe sa tworzone przez skrypt `db/users/init.sql` przy pierwszym uruchomieniu kontenera.
+
+Jesli init.sql nie zostal wykonany automatycznie, uruchom recznie:
+
+```bash
+docker exec -i pku-oracle-db sqlplus -S pku/pku@//localhost:1521/FREEPDB1 < db/users/init.sql
+```
 
 ### 2. Backend
 
@@ -115,11 +122,12 @@ Wszystkie endpointy sa dostepne pod prefixem `/api/`.
 ### Endpointy chronione (wymagaja sesji)
 | Metoda | Sciezka | Opis |
 |--------|---------|------|
-| GET | `/api/dashboard` | Dashboard z lista oplat i statusami |
+| GET | `/api/dashboard` | Dashboard z okresami rozliczeniowymi i statusami oswiadczen |
+| GET | `/api/billing-periods?feeType={kod}&year={rok}[&month={mies}]` | Lista okresow rozliczeniowych |
 | GET | `/api/declarations` | Lista oswiadczen kontrahenta |
 | GET | `/api/declarations/{id}` | Szczegoly oswiadczenia |
 | GET | `/api/declarations/form?feeType={kod}` | Szablon formularza dla typu oplaty |
-| POST | `/api/declarations` | Zlozenie oswiadczenia |
+| POST | `/api/declarations` | Zlozenie oswiadczenia (`{feeTypeCode, billingPeriodId, items, comment}`) |
 
 ## Testy
 
@@ -131,7 +139,8 @@ cd frontend
 # Testy jednostkowe (Vitest)
 npm run test
 
-# Testy e2e (Playwright)
+# Testy e2e (Playwright) — wymaga dzialajacego backendu i bazy
+npx playwright install chromium   # jednorazowo
 npx playwright test
 ```
 
@@ -162,7 +171,10 @@ pku-mat/
 │   │   ├── pages/              # Strony aplikacji
 │   │   ├── types/              # Interfejsy TypeScript
 │   │   └── __tests__/          # Testy jednostkowe
-│   └── e2e/                    # Testy Playwright
+│   ├── e2e/                    # Testy Playwright
+│   ├── vite.config.ts          # Konfiguracja Vite (build + dev proxy)
+│   ├── vitest.config.ts        # Konfiguracja Vitest (testy jednostkowe)
+│   └── Dockerfile              # Multi-stage: node build + nginx z proxy /api
 ├── backend/                    # Aplikacja Kotlin Spring Boot
 │   └── src/main/kotlin/pl/pku/mat/
 │       ├── config/             # SecurityConfig, FormFieldConfig
@@ -199,7 +211,8 @@ Projekt korzysta z obrazu **gvenzl/oracle-free:23-slim**.
 | `fee_types` | Typy oplat (OP, OZE) |
 | `contractors` | Kontrahenci powiazani z uzytkownikami |
 | `contractor_fee_types` | Mapowanie kontrahent-oplata |
-| `declarations` | Oswiadczenia rozliczeniowe |
+| `billing_periods` | Okresy rozliczeniowe (miesieczne/dziesieciodniowe) |
+| `declarations` | Oswiadczenia rozliczeniowe (z JSON w kolumnie CLOB) |
 | `declaration_items` | Pozycje formularza oswiadczenia |
 
 Skrypt `db/users/init.sql` tworzy wszystkie tabele i wypelnia je danymi testowymi przy pierwszym uruchomieniu kontenera Oracle.

@@ -52,7 +52,20 @@ CREATE TABLE contractor_fee_types (
     CONSTRAINT uq_contractor_fee UNIQUE (contractor_id, fee_type_id)
 );
 
--- 7. Declarations
+-- 7. Billing periods (okresy rozliczeniowe)
+CREATE TABLE billing_periods (
+    id                  NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    fee_type_id         NUMBER NOT NULL REFERENCES fee_types(id),
+    year                NUMBER(4) NOT NULL,
+    month               NUMBER(2) NOT NULL,
+    sub_period          NUMBER(2) DEFAULT 1 NOT NULL,
+    start_date          DATE NOT NULL,
+    end_date            DATE NOT NULL,
+    submission_deadline DATE NOT NULL,
+    CONSTRAINT uq_billing_period UNIQUE (fee_type_id, year, month, sub_period)
+);
+
+-- 8. Declarations
 CREATE TABLE declarations (
     id                 NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     declaration_number VARCHAR2(200) NOT NULL UNIQUE,
@@ -64,13 +77,14 @@ CREATE TABLE declarations (
     version            NUMBER(3) DEFAULT 1 NOT NULL,
     status             VARCHAR2(30) DEFAULT 'NIE_ZLOZONE' NOT NULL,
     remarks            VARCHAR2(1000),
-    json_file_path     VARCHAR2(500),
+    json_content       CLOB,
     created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     submitted_at       TIMESTAMP,
-    created_by         NUMBER NOT NULL REFERENCES users(id)
+    created_by         NUMBER NOT NULL REFERENCES users(id),
+    billing_period_id  NUMBER REFERENCES billing_periods(id)
 );
 
--- 8. Declaration items (form field values)
+-- 9. Declaration items (form field values)
 CREATE TABLE declaration_items (
     id             NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     declaration_id NUMBER NOT NULL REFERENCES declarations(id),
@@ -83,6 +97,7 @@ CREATE TABLE declaration_items (
 CREATE INDEX idx_declarations_contractor ON declarations(contractor_id);
 CREATE INDEX idx_declarations_status ON declarations(status);
 CREATE INDEX idx_declaration_items_decl ON declaration_items(declaration_id);
+CREATE INDEX idx_billing_periods_fee_type ON billing_periods(fee_type_id);
 
 -- =============================================
 -- SEED DATA
@@ -118,5 +133,45 @@ VALUES ('WYT1', 'Testowy Wytworca S.A.', 2, 3);
 INSERT INTO contractor_fee_types (contractor_id, fee_type_id) VALUES (1, 1);
 INSERT INTO contractor_fee_types (contractor_id, fee_type_id) VALUES (1, 2);
 INSERT INTO contractor_fee_types (contractor_id, fee_type_id) VALUES (2, 2);
+
+-- Billing periods: OP (fee_type_id=1) — miesięczne (sub_period=1), deadline = end_date + 5 dni
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (1, 2026, 1, 1, DATE '2026-01-01', DATE '2026-01-31', DATE '2026-02-05');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (1, 2026, 2, 1, DATE '2026-02-01', DATE '2026-02-28', DATE '2026-03-05');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (1, 2026, 3, 1, DATE '2026-03-01', DATE '2026-03-31', DATE '2026-04-05');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (1, 2026, 4, 1, DATE '2026-04-01', DATE '2026-04-30', DATE '2026-05-05');
+
+-- Billing periods: OZE (fee_type_id=2) — dziesięciodniowe (3 podokresy/miesiąc), deadline = end_date + 5 dni
+-- Styczeń 2026
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 1, 1, DATE '2026-01-01', DATE '2026-01-10', DATE '2026-01-15');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 1, 2, DATE '2026-01-11', DATE '2026-01-20', DATE '2026-01-25');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 1, 3, DATE '2026-01-21', DATE '2026-01-31', DATE '2026-02-05');
+-- Luty 2026
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 2, 1, DATE '2026-02-01', DATE '2026-02-10', DATE '2026-02-15');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 2, 2, DATE '2026-02-11', DATE '2026-02-20', DATE '2026-02-25');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 2, 3, DATE '2026-02-21', DATE '2026-02-28', DATE '2026-03-05');
+-- Marzec 2026
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 3, 1, DATE '2026-03-01', DATE '2026-03-10', DATE '2026-03-15');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 3, 2, DATE '2026-03-11', DATE '2026-03-20', DATE '2026-03-25');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 3, 3, DATE '2026-03-21', DATE '2026-03-31', DATE '2026-04-05');
+-- Kwiecień 2026
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 4, 1, DATE '2026-04-01', DATE '2026-04-10', DATE '2026-04-15');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 4, 2, DATE '2026-04-11', DATE '2026-04-20', DATE '2026-04-25');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2026, 4, 3, DATE '2026-04-21', DATE '2026-04-30', DATE '2026-05-05');
 
 COMMIT;
