@@ -11,11 +11,13 @@ class DeclarationNumberGenerator {
         year: Int,
         month: Int,
         subPeriod: Int,
-        version: Int
+        version: Int,
+        correction: Boolean = false
     ): String {
         val monthStr = month.toString().padStart(2, '0')
         val subPeriodStr = subPeriod.toString().padStart(2, '0')
         val versionStr = version.toString().padStart(2, '0')
-        return "OSW/$feeTypeCode/$contractorShortName/$year/$monthStr/$subPeriodStr/$versionStr"
+        val base = "OSW/$feeTypeCode/$contractorShortName/$year/$monthStr/$subPeriodStr/$versionStr"
+        return if (correction) "$base/KOR" else base
     }
 }

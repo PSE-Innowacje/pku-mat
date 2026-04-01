@@ -22,6 +22,12 @@ class DeclarationController(
         return ResponseEntity.ok(declarationService.getDeclarations(userId))
     }
 
+    @GetMapping("/by-period/{billingPeriodId}")
+    fun getDeclarationsByBillingPeriod(@PathVariable billingPeriodId: Long): ResponseEntity<List<DeclarationResponse>> {
+        val userId = getCurrentUserId()
+        return ResponseEntity.ok(declarationService.getDeclarationsByBillingPeriod(userId, billingPeriodId))
+    }
+
     @GetMapping("/{id}")
     fun getDeclaration(@PathVariable id: Long): ResponseEntity<DeclarationResponse> {
         val userId = getCurrentUserId()

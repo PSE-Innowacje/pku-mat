@@ -5,7 +5,10 @@ import { DeclarationFormTemplate } from '../types';
 import FormField from '../components/FormField';
 
 export default function DeclarationFormPage() {
-  const { feeType } = useParams<{ feeType: string }>();
+  const { feeType, billingPeriodId } = useParams<{
+    feeType: string;
+    billingPeriodId: string;
+  }>();
   const navigate = useNavigate();
   const [template, setTemplate] = useState<DeclarationFormTemplate | null>(
     null
@@ -54,12 +57,11 @@ export default function DeclarationFormPage() {
   };
 
   const handleConfirm = async () => {
-    if (!template || !feeType) return;
+    if (!template || !feeType || !billingPeriodId) return;
     setSubmitting(true);
     setShowConfirm(false);
 
     try {
-      const now = new Date();
       const items: Record<string, number> = {};
       Object.entries(values).forEach(([k, v]) => {
         if (v) items[k] = parseFloat(v);
@@ -67,9 +69,7 @@ export default function DeclarationFormPage() {
 
       const result = await submitDeclaration({
         feeTypeCode: feeType,
-        year: now.getFullYear(),
-        month: now.getMonth() + 1,
-        subPeriod: 1,
+        billingPeriodId: parseInt(billingPeriodId, 10),
         items,
         comment: comment || undefined,
       });

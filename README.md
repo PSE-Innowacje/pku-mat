@@ -5,11 +5,13 @@ System do skladania oswiadczen rozliczeniowych w ramach oplat przesylowych i poz
 ## Funkcjonalnosc
 
 - Logowanie z rolami (Administrator, Kontrahent)
-- Dashboard z lista okresow rozliczeniowych i statusami oswiadczen w biezacym miesiacu
+- Dashboard z kafelkami okresow rozliczeniowych pogrupowanymi wg typu oplaty, z filtrami
 - Rejestr okresow rozliczeniowych (miesieczne dla OP, dziesieciodniowe dla OZE)
 - Skladanie oswiadczen rozliczeniowych na kazdy okres (dynamiczny formularz wg typu oplaty i kontrahenta)
+- Wersjonowanie oswiadczen — mozliwosc skladania kolejnych wersji na ten sam okres
+- Korekty — oswiadczenia skladane po terminie oznaczane sufiksem /KOR
+- Podglad listy wersji oswiadczen dla kazdego okresu
 - Zapis zlozonych oswiadczen w formacie JSON w bazie danych
-- Podglad zlozonych oswiadczen
 
 ### Obslugiwane typy
 
@@ -125,6 +127,7 @@ Wszystkie endpointy sa dostepne pod prefixem `/api/`.
 | GET | `/api/dashboard` | Dashboard z okresami rozliczeniowymi i statusami oswiadczen |
 | GET | `/api/billing-periods?feeType={kod}&year={rok}[&month={mies}]` | Lista okresow rozliczeniowych |
 | GET | `/api/declarations` | Lista oswiadczen kontrahenta |
+| GET | `/api/declarations/by-period/{billingPeriodId}` | Lista wersji oswiadczen dla okresu |
 | GET | `/api/declarations/{id}` | Szczegoly oswiadczenia |
 | GET | `/api/declarations/form?feeType={kod}` | Szablon formularza dla typu oplaty |
 | POST | `/api/declarations` | Zlozenie oswiadczenia (`{feeTypeCode, billingPeriodId, items, comment}`) |

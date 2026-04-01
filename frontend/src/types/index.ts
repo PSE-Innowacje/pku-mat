@@ -10,12 +10,17 @@ export interface DashboardResponse {
   contractorType: string;
   year: number;
   month: number;
-  feeDeclarations: FeeDeclarationStatus[];
+  periodDeclarations: PeriodDeclarationStatus[];
 }
 
-export interface FeeDeclarationStatus {
+export interface PeriodDeclarationStatus {
+  billingPeriodId: number;
   feeTypeCode: string;
   feeTypeName: string;
+  subPeriod: number;
+  startDate: string;
+  endDate: string;
+  submissionDeadline: string;
   status: string;
   declarationId: number | null;
   declarationNumber: string | null;
@@ -40,9 +45,7 @@ export interface DeclarationFormTemplate {
 
 export interface DeclarationSubmitRequest {
   feeTypeCode: string;
-  year: number;
-  month: number;
-  subPeriod: number;
+  billingPeriodId: number;
   items: Record<string, number>;
   comment?: string;
 }

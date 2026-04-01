@@ -122,16 +122,17 @@ class DeclarationService(
             require(it.length <= 1000) { "Komentarz nie moze przekraczac 1000 znakow" }
         }
 
-        // Determine version
+        // Determine version and correction mode
         val latestDeclaration = declarationRepository.findLatestByBillingPeriod(
             contractor.id!!, billingPeriod.id!!
         )
         val newVersion = (latestDeclaration?.version ?: 0) + 1
+        val isCorrection = LocalDate.now().isAfter(billingPeriod.submissionDeadline)
 
         val declarationNumber = numberGenerator.generate(
             feeType.code, contractor.shortName,
             billingPeriod.year, billingPeriod.month, billingPeriod.subPeriod,
-            newVersion
+            newVersion, correction = isCorrection
         )
 
         val now = Instant.now()
@@ -187,6 +188,19 @@ class DeclarationService(
             .orElseThrow { NoSuchElementException("Nie znaleziono uzytkownika") }
 
         return buildDeclarationResponse(declaration, feeType.code, feeType.name, contractor.fullName, createdByUser.displayName)
+    }
+
+    fun getDeclarationsByBillingPeriod(userId: Long, billingPeriodId: Long): List<DeclarationResponse> {
+        val contractor = contractorRepository.findByUserId(userId)
+            ?: throw NoSuchElementException("Nie znaleziono kontrahenta")
+
+        return declarationRepository.findAllByBillingPeriod(contractor.id!!, billingPeriodId).map { declaration ->
+            val feeType = feeTypeRepository.findById(declaration.feeTypeId)
+                .orElseThrow { NoSuchElementException("Nie znaleziono typu oplaty") }
+            val createdByUser = userRepository.findById(declaration.createdBy)
+                .orElseThrow { NoSuchElementException("Nie znaleziono uzytkownika") }
+            buildDeclarationResponse(declaration, feeType.code, feeType.name, contractor.fullName, createdByUser.displayName)
+        }
     }
 
     fun getDeclarations(userId: Long): List<DeclarationResponse> {

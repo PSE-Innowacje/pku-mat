@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import DeclarationFormPage from './pages/DeclarationFormPage';
 import DeclarationDetailPage from './pages/DeclarationDetailPage';
+import DeclarationVersionsPage from './pages/DeclarationVersionsPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 
 function App() {
@@ -18,8 +19,12 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route
-              path="/declarations/new/:feeType"
+              path="/declarations/new/:feeType/:billingPeriodId"
               element={<DeclarationFormPage />}
+            />
+            <Route
+              path="/declarations/versions/:billingPeriodId"
+              element={<DeclarationVersionsPage />}
             />
             <Route
               path="/declarations/:id/confirmation"

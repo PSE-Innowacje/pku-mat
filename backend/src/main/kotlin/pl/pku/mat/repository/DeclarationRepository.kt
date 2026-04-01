@@ -16,4 +16,12 @@ interface DeclarationRepository : CrudRepository<DeclarationEntity, Long> {
         FETCH FIRST 1 ROWS ONLY
     """)
     fun findLatestByBillingPeriod(contractorId: Long, billingPeriodId: Long): DeclarationEntity?
+
+    @Query("""
+        SELECT * FROM DECLARATIONS
+        WHERE contractor_id = :contractorId
+          AND billing_period_id = :billingPeriodId
+        ORDER BY version DESC
+    """)
+    fun findAllByBillingPeriod(contractorId: Long, billingPeriodId: Long): List<DeclarationEntity>
 }

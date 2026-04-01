@@ -31,6 +31,14 @@ export function getDeclarations(): Promise<DeclarationResponse[]> {
   return apiRequest<DeclarationResponse[]>('/declarations');
 }
 
+export function getDeclarationsByBillingPeriod(
+  billingPeriodId: number
+): Promise<DeclarationResponse[]> {
+  return apiRequest<DeclarationResponse[]>(
+    `/declarations/by-period/${billingPeriodId}`
+  );
+}
+
 export function getDeclaration(id: number): Promise<DeclarationResponse> {
   return apiRequest<DeclarationResponse>(`/declarations/${id}`);
 }

@@ -35,7 +35,7 @@ src/
 ├── api/             # API client (fetch wrapper), auth.ts, declarations.ts
 ├── components/      # Layout, ProtectedRoute, FormField
 ├── context/         # AuthContext (session-based auth state)
-├── pages/           # LoginPage, DashboardPage, DeclarationFormPage, DeclarationDetailPage, ConfirmationPage
+├── pages/           # LoginPage, DashboardPage, DeclarationFormPage, DeclarationDetailPage, DeclarationVersionsPage, ConfirmationPage
 └── types/           # TypeScript interfaces matching backend DTOs
 ```
 
@@ -50,6 +50,7 @@ src/
 - `GET /api/dashboard` — billing period declarations status for current month (per fee type × period)
 - `GET /api/billing-periods?feeType={code}&year={y}[&month={m}]` — list billing periods
 - `GET /api/declarations` — list all declarations for user's contractor
+- `GET /api/declarations/by-period/{billingPeriodId}` — all declaration versions for a billing period
 - `GET /api/declarations/{id}` — single declaration with items
 - `GET /api/declarations/form?feeType={code}` — form field definitions for fee type
 - `POST /api/declarations` — submit declaration (`{feeTypeCode, billingPeriodId, items, comment}`), saves to DB with JSON in `json_content` CLOB column
@@ -111,7 +112,8 @@ Oracle connection: `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`. In Docker the 
 - **Contractor types**: OSDp (Operator przylaczony), Wytworca
 - **Fee types**: OP (Oplata przejsciowa), OZE (Oplata OZE)
 - **Declaration statuses**: NIE_ZLOZONE, ROBOCZE, ZLOZONE
-- **Declaration number format**: `OSW/{fee_type}/{contractor_short}/{year}/{month}/{sub_period}/{version}`
+- **Declaration number format**: `OSW/{fee_type}/{contractor_short}/{year}/{month}/{sub_period}/{version}[/KOR]` — `/KOR` suffix appended when submitted after billing period's `submission_deadline`
+- **Declaration versioning**: Multiple versions can be submitted per billing period. Each new submission increments the version number. Versions submitted after deadline are corrections (korekty)
 - **Form field definitions**: Hardcoded in `FormFieldConfig.kt` per fee type x contractor type combination
 - **JSON export**: Submitted declarations are serialized to JSON and stored in the `json_content` CLOB column of the `declarations` table
 - **Billing periods**: Defined per fee type × year × month × sub_period. OP has monthly periods (sub_period=1), OZE has 10-day periods (3 sub_periods per month). Each period has `start_date`, `end_date`, and `submission_deadline` (default: end_date + 5 days). Declarations reference a `billing_period_id`.

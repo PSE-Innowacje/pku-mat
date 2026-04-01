@@ -60,7 +60,7 @@ body {
 
 /* === Main === */
 .main {
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 24px;
 }
@@ -298,6 +298,145 @@ body {
 .dashboard-context {
   color: #718096;
   font-size: 0.9rem;
+}
+
+/* === Fee Type Toggles === */
+.fee-type-toggles {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.fee-type-toggle {
+  padding: 8px 20px;
+  border: 2px solid #cbd5e0;
+  border-radius: 20px;
+  background: white;
+  color: #4a5568;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fee-type-toggle:hover {
+  border-color: #2b6cb0;
+  color: #2b6cb0;
+}
+
+.fee-type-toggle-active {
+  background: #2b6cb0;
+  border-color: #2b6cb0;
+  color: white;
+}
+
+.fee-type-toggle-active:hover:not(:disabled) {
+  background: #2c5282;
+  border-color: #2c5282;
+}
+
+/* === Fee Type Regions === */
+.fee-type-region {
+  margin-bottom: 32px;
+}
+
+.fee-type-region-title {
+  font-size: 1.1rem;
+  color: #2d3748;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* === Period Cards === */
+.period-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.period-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 4px solid #e2e8f0;
+  transition: box-shadow 0.2s;
+}
+
+.period-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.period-card-overdue {
+  border-left-color: #e53e3e;
+}
+
+.period-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.period-card-dates {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+.period-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.period-card-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.period-card-label {
+  color: #718096;
+  min-width: 120px;
+}
+
+.period-card-number {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.period-card-overdue-text {
+  color: #e53e3e;
+  font-weight: 600;
+}
+
+.period-card-correction {
+  background: #fefcbf;
+  color: #975a16;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.period-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.text-muted {
+  color: #718096;
+  font-size: 0.85rem;
 }
 
 /* === Declaration Detail === */
