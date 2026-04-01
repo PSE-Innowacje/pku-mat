@@ -216,10 +216,11 @@ function PeriodCard({
               <span className="period-card-label">Ostatnia wersja</span>
               <span>
                 v
-                {pd.declarationNumber
-                  ?.split('/')
-                  .slice(-1)[0]
-                  ?.replace('KOR', '') || '?'}
+                {(() => {
+                  const parts = pd.declarationNumber?.split('/') || [];
+                  const isKor = parts[parts.length - 1] === 'KOR';
+                  return isKor ? parts[parts.length - 2] : parts[parts.length - 1];
+                })()}
               </span>
               {pd.declarationNumber?.endsWith('/KOR') && (
                 <span className="period-card-correction">KOR</span>
@@ -227,7 +228,7 @@ function PeriodCard({
             </div>
             <div className="period-card-info">
               <span className="period-card-label">Numer</span>
-              <span className="period-card-number">
+              <span className="period-card-number" title={pd.declarationNumber || ''}>
                 {pd.declarationNumber}
               </span>
             </div>

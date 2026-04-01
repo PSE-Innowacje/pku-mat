@@ -450,20 +450,23 @@ body {
 
 .period-card-info {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
   font-size: 0.85rem;
 }
 
 .period-card-label {
   color: #718096;
-  min-width: 120px;
+  min-width: 110px;
+  flex-shrink: 0;
 }
 
 .period-card-number {
   font-family: monospace;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #4a5568;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .period-card-overdue-text {

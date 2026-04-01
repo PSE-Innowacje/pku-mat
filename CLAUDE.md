@@ -11,6 +11,7 @@ PKU-MAT is a full-stack web application for submitting settlement declarations (
 - **Frontend** (`frontend/`): React 18 + TypeScript, built with Vite. Dev server on port 5173, proxies `/api/*` to backend at `localhost:8080`. In Docker, served by nginx on port 3000 with `proxy_pass` to backend container.
 - **Backend** (`backend/`): Kotlin + Spring Boot 3.2.5 with Spring Data JDBC and Spring Security. Runs on port 8080. Package: `pl.pku.mat`.
 - **Database** (`db/`): Oracle 23 Free (service: FREEPDB1, user: `pku`/`pku`). All DDL and seed data in `db/users/init.sql` (auto-executed on first container start).
+- **Docs** (`docs/`): Project presentation (`prezentacja.html`) — HTML slide deck covering PRD requirements, extra features, assumptions, tech stack, and conclusions.
 - **API convention**: All REST endpoints are prefixed with `/api/` (e.g., `/api/health`, `/api/dashboard`).
 - **Spring profiles**: `dev` (Docker networking with `oracle-db` hostname), `test` (datasource, JDBC repos, and security excluded — repositories mocked in tests).
 - **CORS**: Backend allows origins `http://localhost:5173` (Vite dev) and `http://localhost:3000` (Docker nginx). Configured in `SecurityConfig.kt`.
