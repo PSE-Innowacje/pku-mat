@@ -8,8 +8,6 @@ export interface UserResponse {
 export interface DashboardResponse {
   contractorName: string;
   contractorType: string;
-  year: number;
-  month: number;
   periodDeclarations: PeriodDeclarationStatus[];
 }
 

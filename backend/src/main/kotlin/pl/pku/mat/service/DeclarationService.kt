@@ -32,15 +32,12 @@ class DeclarationService(
             .orElseThrow { NoSuchElementException("Nie znaleziono typu kontrahenta") }
 
         val feeTypeMappings = contractorFeeTypeRepository.findByContractorId(contractor.id!!)
-        val now = LocalDate.now()
-        val year = now.year
-        val month = now.monthValue
 
         val periodDeclarations = feeTypeMappings.flatMap { mapping ->
             val feeType = feeTypeRepository.findById(mapping.feeTypeId)
                 .orElseThrow { NoSuchElementException("Nie znaleziono typu oplaty") }
 
-            val periods = billingPeriodRepository.findByFeeTypeIdAndYearAndMonth(feeType.id!!, year, month)
+            val periods = billingPeriodRepository.findByFeeTypeId(feeType.id!!)
 
             periods.map { period ->
                 val latestDeclaration = declarationRepository.findLatestByBillingPeriod(
@@ -65,8 +62,6 @@ class DeclarationService(
         return DashboardResponse(
             contractorName = contractor.fullName,
             contractorType = contractorType.code,
-            year = year,
-            month = month,
             periodDeclarations = periodDeclarations
         )
     }

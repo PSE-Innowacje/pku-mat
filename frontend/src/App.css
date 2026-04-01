@@ -234,6 +234,23 @@ body {
   gap: 12px;
 }
 
+/* === Form Table === */
+.form-table td {
+  vertical-align: middle;
+}
+
+.form-table .form-input {
+  margin: 0;
+}
+
+.form-table-row-error {
+  background: #fff5f5;
+}
+
+.text-center {
+  text-align: center;
+}
+
 /* === Tables === */
 .table {
   width: 100%;
@@ -335,17 +352,55 @@ body {
   border-color: #2c5282;
 }
 
+.fee-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e53e3e;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  margin-left: 8px;
+  padding: 0 6px;
+}
+
+.fee-type-toggle-active .fee-type-badge {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* === Fee Type Regions === */
 .fee-type-region {
   margin-bottom: 32px;
 }
 
-.fee-type-region-title {
-  font-size: 1.1rem;
-  color: #2d3748;
+.fee-type-region-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 2px solid #e2e8f0;
+}
+
+.fee-type-region-title {
+  font-size: 1.1rem;
+  color: #2d3748;
+  margin: 0;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: #718096;
+  white-space: nowrap;
 }
 
 /* === Period Cards === */

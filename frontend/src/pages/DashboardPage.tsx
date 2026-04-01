@@ -15,26 +15,12 @@ const STATUS_CLASSES: Record<string, string> = {
   ZLOZONE: 'status-submitted',
 };
 
-const MONTH_NAMES = [
-  '',
-  'Styczen',
-  'Luty',
-  'Marzec',
-  'Kwiecien',
-  'Maj',
-  'Czerwiec',
-  'Lipiec',
-  'Sierpien',
-  'Wrzesien',
-  'Pazdziernik',
-  'Listopad',
-  'Grudzien',
-];
-
 function formatDate(dateStr: string): string {
   const [y, m, d] = dateStr.split('-');
   return `${d}.${m}.${y}`;
 }
+
+const PAGE_SIZE = 5;
 
 export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
@@ -42,6 +28,7 @@ export default function DashboardPage() {
   const [visibleFeeTypes, setVisibleFeeTypes] = useState<Set<string>>(
     new Set()
   );
+  const [pageIndex, setPageIndex] = useState<Record<string, number>>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +39,11 @@ export default function DashboardPage() {
           data.periodDeclarations.map((pd) => pd.feeTypeCode)
         );
         setVisibleFeeTypes(allTypes);
+        const initialPages: Record<string, number> = {};
+        allTypes.forEach((code) => {
+          initialPages[code] = 0;
+        });
+        setPageIndex(initialPages);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -68,6 +60,20 @@ export default function DashboardPage() {
     ).values()
   );
 
+  const periodsByFeeType = new Map<string, PeriodDeclarationStatus[]>();
+  dashboard.periodDeclarations.forEach((pd) => {
+    const list = periodsByFeeType.get(pd.feeTypeCode) || [];
+    list.push(pd);
+    periodsByFeeType.set(pd.feeTypeCode, list);
+  });
+
+  const missingCounts = new Map<string, number>();
+  feeTypes.forEach((ft) => {
+    const periods = periodsByFeeType.get(ft.code) || [];
+    const missing = periods.filter((pd) => pd.status === 'NIE_ZLOZONE').length;
+    missingCounts.set(ft.code, missing);
+  });
+
   const toggleFeeType = (code: string) => {
     setVisibleFeeTypes((prev) => {
       const next = new Set(prev);
@@ -82,12 +88,16 @@ export default function DashboardPage() {
     });
   };
 
-  const periodsByFeeType = new Map<string, PeriodDeclarationStatus[]>();
-  dashboard.periodDeclarations.forEach((pd) => {
-    const list = periodsByFeeType.get(pd.feeTypeCode) || [];
-    list.push(pd);
-    periodsByFeeType.set(pd.feeTypeCode, list);
-  });
+  const getPage = (code: string) => pageIndex[code] ?? 0;
+
+  const goPage = (code: string, delta: number) => {
+    const periods = periodsByFeeType.get(code) || [];
+    const totalPages = Math.ceil(periods.length / PAGE_SIZE);
+    setPageIndex((prev) => ({
+      ...prev,
+      [code]: Math.max(0, Math.min(totalPages - 1, (prev[code] ?? 0) + delta)),
+    }));
+  };
 
   return (
     <div className="dashboard">
@@ -95,39 +105,78 @@ export default function DashboardPage() {
         <h2>Oswiadczenia do zlozenia</h2>
         <p className="dashboard-context">
           Kontrahent: <strong>{dashboard.contractorName}</strong> (
-          {dashboard.contractorType}) | Okres:{' '}
-          <strong>
-            {MONTH_NAMES[dashboard.month]} {dashboard.year}
-          </strong>
+          {dashboard.contractorType})
         </p>
       </div>
 
       <div className="fee-type-toggles">
-        {feeTypes.map((ft) => (
-          <button
-            key={ft.code}
-            className={`btn fee-type-toggle ${visibleFeeTypes.has(ft.code) ? 'fee-type-toggle-active' : ''}`}
-            onClick={() => toggleFeeType(ft.code)}
-          >
-            {ft.name} ({ft.code})
-          </button>
-        ))}
+        {feeTypes.map((ft) => {
+          const missing = missingCounts.get(ft.code) || 0;
+          return (
+            <button
+              key={ft.code}
+              className={`btn fee-type-toggle ${visibleFeeTypes.has(ft.code) ? 'fee-type-toggle-active' : ''}`}
+              onClick={() => toggleFeeType(ft.code)}
+            >
+              {ft.name} ({ft.code})
+              {missing > 0 && (
+                <span className="fee-type-badge">{missing}</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {feeTypes
         .filter((ft) => visibleFeeTypes.has(ft.code))
-        .map((ft) => (
-          <div key={ft.code} className="fee-type-region">
-            <h3 className="fee-type-region-title">
-              {ft.name} ({ft.code})
-            </h3>
-            <div className="period-cards">
-              {(periodsByFeeType.get(ft.code) || []).map((pd) => (
-                <PeriodCard key={pd.billingPeriodId} pd={pd} navigate={navigate} />
-              ))}
+        .map((ft) => {
+          const allPeriods = periodsByFeeType.get(ft.code) || [];
+          const totalPages = Math.ceil(allPeriods.length / PAGE_SIZE);
+          const page = getPage(ft.code);
+          const start = page * PAGE_SIZE;
+          const visiblePeriods = allPeriods.slice(start, start + PAGE_SIZE);
+
+          return (
+            <div key={ft.code} className="fee-type-region">
+              <div className="fee-type-region-header">
+                <h3 className="fee-type-region-title">
+                  {ft.name} ({ft.code})
+                </h3>
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      disabled={page === 0}
+                      onClick={() => goPage(ft.code, -1)}
+                    >
+                      &larr; Nowsze
+                    </button>
+                    <span className="pagination-info">
+                      {start + 1}&ndash;{Math.min(start + PAGE_SIZE, allPeriods.length)} z{' '}
+                      {allPeriods.length}
+                    </span>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      disabled={page === totalPages - 1}
+                      onClick={() => goPage(ft.code, 1)}
+                    >
+                      Starsze &rarr;
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="period-cards">
+                {visiblePeriods.map((pd) => (
+                  <PeriodCard
+                    key={pd.billingPeriodId}
+                    pd={pd}
+                    navigate={navigate}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
     </div>
   );
 }
@@ -165,14 +214,22 @@ function PeriodCard({
           <>
             <div className="period-card-info">
               <span className="period-card-label">Ostatnia wersja</span>
-              <span>v{pd.declarationNumber?.split('/').slice(-1)[0]?.replace('KOR', '') || '?'}</span>
+              <span>
+                v
+                {pd.declarationNumber
+                  ?.split('/')
+                  .slice(-1)[0]
+                  ?.replace('KOR', '') || '?'}
+              </span>
               {pd.declarationNumber?.endsWith('/KOR') && (
                 <span className="period-card-correction">KOR</span>
               )}
             </div>
             <div className="period-card-info">
               <span className="period-card-label">Numer</span>
-              <span className="period-card-number">{pd.declarationNumber}</span>
+              <span className="period-card-number">
+                {pd.declarationNumber}
+              </span>
             </div>
           </>
         )}

@@ -116,7 +116,9 @@ Oracle connection: `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`. In Docker the 
 - **Declaration versioning**: Multiple versions can be submitted per billing period. Each new submission increments the version number. Versions submitted after deadline are corrections (korekty)
 - **Form field definitions**: Hardcoded in `FormFieldConfig.kt` per fee type x contractor type combination
 - **JSON export**: Submitted declarations are serialized to JSON and stored in the `json_content` CLOB column of the `declarations` table
-- **Billing periods**: Defined per fee type × year × month × sub_period. OP has monthly periods (sub_period=1), OZE has 10-day periods (3 sub_periods per month). Each period has `start_date`, `end_date`, and `submission_deadline` (default: end_date + 5 days). Declarations reference a `billing_period_id`.
+- **Billing periods**: Defined per fee type × year × month × sub_period. OP has monthly periods (sub_period=1), OZE has 10-day periods (3 sub_periods per month). Each period has `start_date`, `end_date`, and `submission_deadline` (default: end_date + 5 days). Declarations reference a `billing_period_id`. Seed data covers 6 months (Oct 2025 – Mar 2026).
+- **Dashboard**: Shows all billing periods grouped by fee type in descending order (newest first). Fee type toggle buttons with missing declaration counts. Paginated cards (5 per page) per region. Each card shows period dates, deadline, status, last version number, and action buttons.
+- **Declaration form**: Table layout with columns: LP, Opis, Wartosc (editable), Jednostka.
 
 ## Language
 

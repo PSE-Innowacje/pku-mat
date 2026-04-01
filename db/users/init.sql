@@ -134,17 +134,42 @@ INSERT INTO contractor_fee_types (contractor_id, fee_type_id) VALUES (1, 1);
 INSERT INTO contractor_fee_types (contractor_id, fee_type_id) VALUES (1, 2);
 INSERT INTO contractor_fee_types (contractor_id, fee_type_id) VALUES (2, 2);
 
--- Billing periods: OP (fee_type_id=1) — miesięczne (sub_period=1), deadline = end_date + 5 dni
+-- Billing periods: OP (fee_type_id=1) — miesięczne, 6 miesięcy (paź 2025 – mar 2026)
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (1, 2025, 10, 1, DATE '2025-10-01', DATE '2025-10-31', DATE '2025-11-05');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (1, 2025, 11, 1, DATE '2025-11-01', DATE '2025-11-30', DATE '2025-12-05');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (1, 2025, 12, 1, DATE '2025-12-01', DATE '2025-12-31', DATE '2026-01-05');
 INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
 VALUES (1, 2026, 1, 1, DATE '2026-01-01', DATE '2026-01-31', DATE '2026-02-05');
 INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
 VALUES (1, 2026, 2, 1, DATE '2026-02-01', DATE '2026-02-28', DATE '2026-03-05');
 INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
 VALUES (1, 2026, 3, 1, DATE '2026-03-01', DATE '2026-03-31', DATE '2026-04-05');
-INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
-VALUES (1, 2026, 4, 1, DATE '2026-04-01', DATE '2026-04-30', DATE '2026-05-05');
 
--- Billing periods: OZE (fee_type_id=2) — dziesięciodniowe (3 podokresy/miesiąc), deadline = end_date + 5 dni
+-- Billing periods: OZE (fee_type_id=2) — dziesięciodniowe, 6 miesięcy (paź 2025 – mar 2026)
+-- Październik 2025
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 10, 1, DATE '2025-10-01', DATE '2025-10-10', DATE '2025-10-15');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 10, 2, DATE '2025-10-11', DATE '2025-10-20', DATE '2025-10-25');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 10, 3, DATE '2025-10-21', DATE '2025-10-31', DATE '2025-11-05');
+-- Listopad 2025
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 11, 1, DATE '2025-11-01', DATE '2025-11-10', DATE '2025-11-15');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 11, 2, DATE '2025-11-11', DATE '2025-11-20', DATE '2025-11-25');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 11, 3, DATE '2025-11-21', DATE '2025-11-30', DATE '2025-12-05');
+-- Grudzień 2025
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 12, 1, DATE '2025-12-01', DATE '2025-12-10', DATE '2025-12-15');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 12, 2, DATE '2025-12-11', DATE '2025-12-20', DATE '2025-12-25');
+INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
+VALUES (2, 2025, 12, 3, DATE '2025-12-21', DATE '2025-12-31', DATE '2026-01-05');
 -- Styczeń 2026
 INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
 VALUES (2, 2026, 1, 1, DATE '2026-01-01', DATE '2026-01-10', DATE '2026-01-15');
@@ -166,12 +191,5 @@ INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, e
 VALUES (2, 2026, 3, 2, DATE '2026-03-11', DATE '2026-03-20', DATE '2026-03-25');
 INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
 VALUES (2, 2026, 3, 3, DATE '2026-03-21', DATE '2026-03-31', DATE '2026-04-05');
--- Kwiecień 2026
-INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
-VALUES (2, 2026, 4, 1, DATE '2026-04-01', DATE '2026-04-10', DATE '2026-04-15');
-INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
-VALUES (2, 2026, 4, 2, DATE '2026-04-11', DATE '2026-04-20', DATE '2026-04-25');
-INSERT INTO billing_periods (fee_type_id, year, month, sub_period, start_date, end_date, submission_deadline)
-VALUES (2, 2026, 4, 3, DATE '2026-04-21', DATE '2026-04-30', DATE '2026-05-05');
 
 COMMIT;

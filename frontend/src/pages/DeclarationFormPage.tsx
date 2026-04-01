@@ -2,7 +2,6 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getFormTemplate, submitDeclaration } from '../api/declarations';
 import { DeclarationFormTemplate } from '../types';
-import FormField from '../components/FormField';
 
 export default function DeclarationFormPage() {
   const { feeType, billingPeriodId } = useParams<{
@@ -94,17 +93,51 @@ export default function DeclarationFormPage() {
       </h2>
 
       <form onSubmit={handleSubmit}>
-        <div className="form-fields">
-          {template.fields.map((field) => (
-            <FormField
-              key={field.code}
-              field={field}
-              value={values[field.code] || ''}
-              onChange={handleChange}
-              error={errors[field.code]}
-            />
-          ))}
-        </div>
+        <table className="table form-table">
+          <thead>
+            <tr>
+              <th style={{ width: '50px' }}>LP</th>
+              <th>Opis</th>
+              <th style={{ width: '180px' }}>Wartosc</th>
+              <th style={{ width: '80px' }}>Jednostka</th>
+            </tr>
+          </thead>
+          <tbody>
+            {template.fields.map((field, idx) => (
+              <tr
+                key={field.code}
+                className={errors[field.code] ? 'form-table-row-error' : ''}
+              >
+                <td className="text-center">{idx + 1}</td>
+                <td>
+                  {field.label}
+                  {field.required && <span className="required"> *</span>}
+                  {errors[field.code] && (
+                    <div className="form-error">{errors[field.code]}</div>
+                  )}
+                </td>
+                <td>
+                  <input
+                    id={field.code}
+                    type="number"
+                    step={
+                      field.precision > 0
+                        ? Math.pow(10, -field.precision)
+                        : 1
+                    }
+                    value={values[field.code] || ''}
+                    onChange={(e) => handleChange(field.code, e.target.value)}
+                    className={`form-input ${errors[field.code] ? 'form-input-error' : ''}`}
+                    required={field.required}
+                  />
+                </td>
+                <td className="text-center text-muted">
+                  {field.unit || '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
         {template.commentAllowed && (
           <div className="form-field">

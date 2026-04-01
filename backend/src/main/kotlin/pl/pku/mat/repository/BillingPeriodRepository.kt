@@ -6,6 +6,11 @@ import pl.pku.mat.entity.BillingPeriodEntity
 
 interface BillingPeriodRepository : CrudRepository<BillingPeriodEntity, Long> {
 
+    @Query("""
+        SELECT * FROM BILLING_PERIODS
+        WHERE fee_type_id = :feeTypeId
+        ORDER BY year DESC, month DESC, sub_period DESC
+    """)
     fun findByFeeTypeId(feeTypeId: Long): List<BillingPeriodEntity>
 
     @Query("""

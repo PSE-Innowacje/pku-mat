@@ -5,8 +5,6 @@ import java.time.LocalDate
 data class DashboardResponse(
     val contractorName: String,
     val contractorType: String,
-    val year: Int,
-    val month: Int,
     val periodDeclarations: List<PeriodDeclarationStatus>
 )
 

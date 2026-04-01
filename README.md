@@ -5,9 +5,9 @@ System do skladania oswiadczen rozliczeniowych w ramach oplat przesylowych i poz
 ## Funkcjonalnosc
 
 - Logowanie z rolami (Administrator, Kontrahent)
-- Dashboard z kafelkami okresow rozliczeniowych pogrupowanymi wg typu oplaty, z filtrami
+- Dashboard z kafelkami okresow rozliczeniowych pogrupowanymi wg typu oplaty, z filtrami i paginacja (5 na strone)
 - Rejestr okresow rozliczeniowych (miesieczne dla OP, dziesieciodniowe dla OZE)
-- Skladanie oswiadczen rozliczeniowych na kazdy okres (dynamiczny formularz wg typu oplaty i kontrahenta)
+- Skladanie oswiadczen rozliczeniowych na kazdy okres (formularz tabelaryczny wg typu oplaty i kontrahenta)
 - Wersjonowanie oswiadczen — mozliwosc skladania kolejnych wersji na ten sam okres
 - Korekty — oswiadczenia skladane po terminie oznaczane sufiksem /KOR
 - Podglad listy wersji oswiadczen dla kazdego okresu
