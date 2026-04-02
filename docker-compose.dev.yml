@@ -1,0 +1,23 @@
+services:
+
+  oracle-db:
+    image: gvenzl/oracle-free:23-slim
+    container_name: pku-oracle-db
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: pku
+      APP_USER_PASSWORD: pku
+    volumes:
+      - ./db/users/:/container-entrypoint-initdb.d/
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  oracle-data:

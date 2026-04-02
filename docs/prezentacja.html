@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PKU-MAT — Prezentacja projektu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --purple: #a78bfa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .slide-number {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--accent-light), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: var(--accent-light);
+  }
+
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--purple);
+  }
+
+  .subtitle {
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    max-width: 700px;
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 4px 4px 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 10px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 10px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .card h3 { margin-bottom: 12px; }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul li {
+    padding: 6px 0;
+    padding-left: 24px;
+    position: relative;
+    color: var(--text);
+    font-size: 1.05rem;
+  }
+
+  ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .check-list li::before {
+    content: '\2713';
+    background: none;
+    color: var(--green);
+    font-weight: 700;
+    font-size: 1rem;
+    top: 6px;
+  }
+
+  .x-list li::before {
+    content: '\2717';
+    background: none;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 1rem;
+    top: 6px;
+  }
+
+  .star-list li::before {
+    content: '\2605';
+    background: none;
+    color: var(--yellow);
+    font-size: 0.9rem;
+    top: 7px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-yellow { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge-blue { background: rgba(59,130,246,0.15); color: var(--accent-light); }
+
+  .tech-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .tech-item .tech-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .tech-item .tech-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .timeline {
+    border-left: 2px solid var(--border);
+    padding-left: 30px;
+    margin-top: 10px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -36px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .timeline-item .time-label {
+    font-size: 0.85rem;
+    color: var(--accent-light);
+    font-weight: 600;
+  }
+
+  .quote {
+    border-left: 3px solid var(--purple);
+    padding: 16px 24px;
+    background: rgba(167,139,250,0.05);
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+  }
+
+  .big-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent-light);
+    line-height: 1;
+  }
+
+  .stat-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .nav {
+    position: fixed;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav a {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    display: block;
+    transition: background 0.2s;
+  }
+
+  .nav a:hover {
+    background: var(--accent);
+  }
+
+  .highlight {
+    color: var(--accent-light);
+    font-weight: 600;
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 20px 0 30px;
+  }
+
+  @media (max-width: 900px) {
+    .slide { padding: 40px 30px; }
+    h1 { font-size: 2.4rem; }
+    h2 { font-size: 1.8rem; }
+    .grid, .grid-3 { grid-template-columns: 1fr; }
+    .nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#slide-1" title="Tytul"></a>
+  <a href="#slide-2" title="Wymagania"></a>
+  <a href="#slide-3" title="Wymagania c.d."></a>
+  <a href="#slide-4" title="Ekstra"></a>
+  <a href="#slide-5" title="Zalozenia"></a>
+  <a href="#slide-6" title="Stos"></a>
+  <a href="#slide-7" title="Wnioski"></a>
+</nav>
+
+<!-- SLIDE 1: Tytuł -->
+<section class="slide" id="slide-1">
+  <span class="slide-number">01 / 07</span>
+  <h1>PKU-MAT</h1>
+  <p class="subtitle">
+    Aplikacja webowa do skladania oswiadczen rozliczeniowych
+    z tytulu oplat przesylowych i nieprzesylowych
+    w ramach Umow Przesylowych z OSP.
+  </p>
+  <div style="margin-top: 20px;">
+    <span class="tag">Hackathon Agentic Coding</span>
+    <span class="tag">Claude Code</span>
+    <span class="tag">Full-stack</span>
+    <span class="tag">React + Kotlin + Oracle</span>
+  </div>
+  <div style="margin-top: 50px; display: flex; gap: 50px;">
+    <div>
+      <div class="big-number">7h</div>
+      <div class="stat-label">czas realizacji</div>
+    </div>
+    <div>
+      <div class="big-number">1</div>
+      <div class="stat-label">sesja Claude Code</div>
+    </div>
+    <div>
+      <div class="big-number">3</div>
+      <div class="stat-label">warstwy aplikacji</div>
+    </div>
+    <div>
+      <div class="big-number">0</div>
+      <div class="stat-label">linii kodu napisanych recznie</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: Wymagania PRD — zrealizowane -->
+<section class="slide" id="slide-2">
+  <span class="slide-number">02 / 07</span>
+  <h2>Zrealizowane wymagania PRD</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>User Stories</h3>
+      <ul class="check-list">
+        <li>Kontrahent widzi liste oswiadczen do zlozenia w danym miesiacu/roku (US c, d)</li>
+        <li>Kontrahent wypelnia i wysyla oswiadczenie (US e, f)</li>
+        <li>Potwierdzenie zlozenia oswiadczenia (US g)</li>
+        <li>Podglad zlozonego oswiadczenia (US h)</li>
+        <li>Skladanie korekt oswiadczen (US i)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Funkcje obowiazkowe</h3>
+      <ul class="check-list">
+        <li>Dashboard z okresami rozliczeniowymi wymagajacymi obslugi (15.1)</li>
+        <li>Lista oswiadczen rozliczeniowych z podzialem na statusy (15.3)</li>
+        <li>Formularz skladania oswiadczenia z dynamicznymi polami (15.4)</li>
+        <li>Podglad zlozonego oswiadczenia (15.5)</li>
+        <li>Szablony danych wg typu oplaty i kontrahenta (15.6)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Kryteria MVP (Level I)</h3>
+      <ul class="check-list">
+        <li>Min. 2 typy uzytkownikow: <span class="badge badge-green">OSDp</span> <span class="badge badge-green">Wytworca</span></li>
+        <li>Lista oswiadczen dla zalogowanego kontrahenta</li>
+        <li>Min. 2 typy oplat: <span class="badge badge-blue">OP</span> <span class="badge badge-blue">OZE</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Bezpieczenstwo i logowanie</h3>
+      <ul class="check-list">
+        <li>Uwierzytelnianie login + haslo (BCrypt)</li>
+        <li>Sesje HTTP z kontrola dostepu</li>
+        <li>Kontrola dostepu — uzytkownik widzi tylko dane swojego kontrahenta</li>
+        <li>Trzy role: Administrator, Kontrahent OSDp, Kontrahent Wytworca</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: Wymagania PRD — poza zakresem -->
+<section class="slide" id="slide-3">
+  <span class="slide-number">03 / 07</span>
+  <h2>Zakres realizacji vs PRD</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Zrealizowane szablony formularzy</h3>
+      <ul class="check-list">
+        <li>Oplata przejsciowa (OP) — OSDp: 9 pol (gospodarstwa, moce, zuzycie)</li>
+        <li>Oplata OZE — OSDp: 4 pola (nalezna kwota, nieisciagalnosc, energia)</li>
+        <li>Oplata OZE — Wytworca: 1 pole (planowana ilosc energii)</li>
+      </ul>
+      <div style="margin-top: 16px;">
+        <h3>Numeracja oswiadczen</h3>
+        <ul class="check-list">
+          <li>Format: OSW/{typ_oplaty}/{kontrahent}/{rok}/{miesiac}/{podokres}/{wersja}</li>
+          <li>Sufiks /KOR dla korekt (po terminie)</li>
+          <li>Automatyczna inkrementacja wersji</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Swiadomie poza zakresem MVP</h3>
+      <ul class="x-list">
+        <li>Panel administracyjny (zarzadzanie uzytkownikami, szablonami)</li>
+        <li>Harmonogram rozliczen (widok kalendarza)</li>
+        <li>Typy kontrahentow: OSDn, OK, Magazyn</li>
+        <li>Oplaty przesylowe (OSS, OZS, OJ, OR)</li>
+        <li>Oplaty: OKO, OM</li>
+        <li>Edycja danych uzytkownika przez administratora</li>
+        <li>Filtrowanie i sortowanie kolumn w tabelach</li>
+        <li>Rozwinieta sekcja z lista zlozonych oswiadczen</li>
+        <li>Status "Robocze" (zapisz bez wysylania)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="quote" style="margin-top: 30px;">
+    Swiadomie wybralismy realizacje uproszczonej funkcjonalnosci spelnijacej kryteria MVP (Level I),
+    zamiast probowac pokryc caly zakres PRD.
+  </div>
+</section>
+
+<!-- SLIDE 4: Ekstra funkcjonalności -->
+<section class="slide" id="slide-4">
+  <span class="slide-number">04 / 07</span>
+  <h2>Dodatkowe funkcjonalnosci</h2>
+  <p style="color: var(--text-muted); margin-bottom: 30px;">Funkcje wykraczajace poza wymagania PRD, zaproponowane i zaimplementowane przez Claude Code</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Wersjonowanie oswiadczen</h3>
+      <ul class="star-list">
+        <li>Automatyczna inkrementacja numeru wersji przy ponownym zlozeniu</li>
+        <li>Widok historii wersji dla danego okresu rozliczeniowego</li>
+        <li>Automatyczne wykrywanie korekty (zlozenie po terminie)</li>
+        <li>Oznaczenie /KOR w numerze oswiadczenia</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Eksport JSON do bazy</h3>
+      <ul class="star-list">
+        <li>Serializacja calego oswiadczenia do JSON</li>
+        <li>Zapis w kolumnie CLOB w bazie Oracle</li>
+        <li>Gotowy format do integracji z systemami zewnetrznymi</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Zaawansowany dashboard</h3>
+      <ul class="star-list">
+        <li>Pogrupowanie okresow wg typu oplaty z przelacznikami</li>
+        <li>Paginacja (5 elementow na strone)</li>
+        <li>Licznik brakujacych oswiadczen per typ oplaty</li>
+        <li>Wizualne oznaczenie przekroczonych terminow</li>
+        <li>Wyswietlanie numeru wersji i statusu korekty</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Infrastruktura</h3>
+      <ul class="star-list">
+        <li>Pelna konteneryzacja (Docker Compose) — 3 serwisy</li>
+        <li>Multi-stage build frontendu (Node + nginx)</li>
+        <li>Seed data: 18 okresow rozliczeniowych (6 miesiecy, rozne podolkresy)</li>
+        <li>Testy jednostkowe (Vitest) i E2E (Playwright)</li>
+        <li>Global exception handler z ustandaryzowanymi odpowiedziami</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: Założenia -->
+<section class="slide" id="slide-5">
+  <span class="slide-number">05 / 07</span>
+  <h2>Zalozenia i podejscie</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Wybor technologii</h3>
+      <ul>
+        <li>Wybralismy technologie, w ktorych <span class="highlight">nie programujemy na co dzien</span></li>
+        <li>Cel: sprawdzenie jak AI radzi sobie z nieznanym nam stosem</li>
+        <li>Kotlin + React + Oracle — kazda warstwa to nowe terytorium</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Konfiguracja AI</h3>
+      <ul>
+        <li><span class="highlight">Nie modyfikowalismy</span> pliku PRD dostarczonego przez biznes</li>
+        <li>Nie konfigurowalismy Claude (brak CLAUDE.md na starcie)</li>
+        <li>Jedna sesja Claude Code na wszystkie warstwy</li>
+        <li>Praca na monorepo (frontend + backend + baza)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Sposob pracy z AI</h3>
+      <ul>
+        <li>Zdefiniowalismy uproszczona funkcjonalnosc razem z Claude w <span class="highlight">planning mode</span></li>
+        <li>Kolejne iteracje realizowane za pomoca <span class="highlight">pojedynczych promptow</span></li>
+        <li>Proste prompty opisujace funkcjonalnosc bez szczegolowej implementacji</li>
+        <li>Pozwolilismy Claude'owi podejmowac decyzje architektoniczne</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Strategia realizacji</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="time-label">Krok 1</div>
+          <div>Przekazanie PRD do Claude w planning mode</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time-label">Krok 2</div>
+          <div>Wspolne zdefiniowanie zakresu MVP</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time-label">Krok 3</div>
+          <div>Iteracyjne prompty: "dodaj logowanie", "zrob dashboard", "dodaj formularz"...</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time-label">Krok 4</div>
+          <div>Poprawki i dopieszczanie UI</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: Stos technologiczny -->
+<section class="slide" id="slide-6">
+  <span class="slide-number">06 / 07</span>
+  <h2>Stos technologiczny</h2>
+  <div class="grid-3">
+    <div class="tech-item">
+      <div class="tech-name">React 18</div>
+      <div class="tech-desc">Frontend SPA z TypeScript</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Vite</div>
+      <div class="tech-desc">Build tool i dev server</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">TypeScript</div>
+      <div class="tech-desc">Typowanie statyczne</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Kotlin</div>
+      <div class="tech-desc">Jezyk backendu</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Spring Boot 3.2</div>
+      <div class="tech-desc">Framework webowy + DI</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Spring Data JDBC</div>
+      <div class="tech-desc">Warstwa dostepu do danych</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Spring Security</div>
+      <div class="tech-desc">Uwierzytelnianie i autoryzacja</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Oracle 23 Free</div>
+      <div class="tech-desc">Baza danych</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Docker Compose</div>
+      <div class="tech-desc">Orkiestracja kontenerow</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">nginx</div>
+      <div class="tech-desc">Reverse proxy + serwer statyczny</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Vitest</div>
+      <div class="tech-desc">Testy jednostkowe</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-name">Playwright</div>
+      <div class="tech-desc">Testy E2E</div>
+    </div>
+  </div>
+  <div style="margin-top: 40px;">
+    <h3>Architektura</h3>
+    <div style="display: flex; align-items: center; gap: 20px; margin-top: 16px; flex-wrap: wrap;">
+      <div class="tech-item" style="flex: 1; min-width: 180px; border-color: var(--accent);">
+        <div class="tech-name">Frontend</div>
+        <div class="tech-desc">React + TS + Vite<br>port 5173 / nginx :3000</div>
+      </div>
+      <div style="color: var(--accent); font-size: 1.5rem;">&#8594;</div>
+      <div class="tech-item" style="flex: 1; min-width: 180px; border-color: var(--green);">
+        <div class="tech-name">Backend</div>
+        <div class="tech-desc">Kotlin + Spring Boot<br>port 8080, REST API</div>
+      </div>
+      <div style="color: var(--green); font-size: 1.5rem;">&#8594;</div>
+      <div class="tech-item" style="flex: 1; min-width: 180px; border-color: var(--yellow);">
+        <div class="tech-name">Baza danych</div>
+        <div class="tech-desc">Oracle 23 Free<br>port 1521, FREEPDB1</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: Wnioski -->
+<section class="slide" id="slide-7">
+  <span class="slide-number">07 / 07</span>
+  <h2>Wnioski i przemyslenia</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Droga do obecnego stanu</h3>
+      <ul>
+        <li>Startowalismy z <span class="highlight">zerowa wiedza</span> o korzystaniu z agentow AI do kodowania</li>
+        <li>Pierwsza proba: realizacja w Oracle APEX — <span class="highlight">wydajnosciowo nie sprawdzilo sie</span> na maszynie wirtualnej</li>
+        <li>Praca od zera: wybor technologii, konfiguracja srodowiska, wybor AI do stanu obecnego — <span class="highlight">7 godzin</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Co nas zaskoczylo</h3>
+      <ul>
+        <li><span class="highlight">Zaskakujace rozumienie</span> naszych instrukcji przez AI — proste prompty wystarczyly</li>
+        <li>Claude samodzielnie zaproponowal architekture, konfiguracje Dockera, seed data</li>
+        <li>Generowanie calych warstw aplikacji na podstawie krotkiego opisu funkcjonalnosci</li>
+        <li>Trudno bedzie <span class="highlight">wrocic do zmudnego kodowania</span> recznego</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Wyzwania</h3>
+      <ul>
+        <li>Nie mozna robic poprawek <span class="highlight">bez kontekstu Claude</span> — trzeba wrocic do sesji</li>
+        <li>Pozwolilismy Claude'owi "isc na zywiol" — poczucie <span class="highlight">braku kontroli</span> nad generowanym kodem</li>
+        <li>Przy nastepnych zastosowaniach bedziemy go <span class="highlight">nieco bardziej pilnowac</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Kluczowe lekcje</h3>
+      <ul>
+        <li>Planning mode to klucz — warto zdefiniowac zakres przed kodowaniem</li>
+        <li>Proste prompty > szczegolowe specyfikacje techniczne</li>
+        <li>Monorepo + jedna sesja = spojnosc miedzy warstwami</li>
+        <li>AI radzi sobie z nieznanym nam stosem technologicznym</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quote" style="margin-top: 40px; font-size: 1.3rem;">
+    Od zera do dzialajacego full-stacka w 7 godzin — bez doswiadczenia z AI coding agents
+    i w technologiach, ktorych nie znamy.
+  </div>
+</section>
+
+</body>
+</html>

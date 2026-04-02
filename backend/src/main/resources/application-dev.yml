@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@//oracle-db:1521/FREEPDB1
+    username: pku
+    password: pku
+    driver-class-name: oracle.jdbc.OracleDriver
