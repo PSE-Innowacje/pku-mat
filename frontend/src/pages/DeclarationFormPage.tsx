@@ -2,6 +2,29 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getFormTemplate, submitDeclaration } from '../api/declarations';
 import { DeclarationFormTemplate } from '../types';
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  TextField,
+  Button,
+  Alert,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Skeleton,
+} from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function DeclarationFormPage() {
   const { feeType, billingPeriodId } = useParams<{
@@ -9,9 +32,7 @@ export default function DeclarationFormPage() {
     billingPeriodId: string;
   }>();
   const navigate = useNavigate();
-  const [template, setTemplate] = useState<DeclarationFormTemplate | null>(
-    null
-  );
+  const [template, setTemplate] = useState<DeclarationFormTemplate | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [comment, setComment] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -83,119 +104,127 @@ export default function DeclarationFormPage() {
     }
   };
 
-  if (error) return <div className="error-banner">{error}</div>;
-  if (!template) return <div className="loading">Ladowanie formularza...</div>;
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (!template)
+    return (
+      <Box>
+        <Skeleton variant="rounded" height={40} sx={{ mb: 2 }} />
+        <Skeleton variant="rounded" height={300} />
+      </Box>
+    );
 
   return (
-    <div className="declaration-form">
-      <h2>
-        Skladanie oswiadczenia: {template.feeTypeName} ({template.feeTypeCode})
-      </h2>
-      <p className="text-muted">
-        Wersja szablonu: <strong>{template.templateVersionName}</strong>
-      </p>
+    <Box>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ mb: 1 }}>
+          Skladanie oswiadczenia: {template.feeTypeName} ({template.feeTypeCode})
+        </Typography>
+        <Chip
+          label={`Szablon: ${template.templateVersionName}`}
+          variant="outlined"
+          size="small"
+          color="primary"
+        />
+      </Box>
 
       <form onSubmit={handleSubmit}>
-        <table className="table form-table">
-          <thead>
-            <tr>
-              <th style={{ width: '50px' }}>LP</th>
-              <th>Opis</th>
-              <th style={{ width: '180px' }}>Wartosc</th>
-              <th style={{ width: '80px' }}>Jednostka</th>
-            </tr>
-          </thead>
-          <tbody>
-            {template.fields.map((field, idx) => (
-              <tr
-                key={field.code}
-                className={errors[field.code] ? 'form-table-row-error' : ''}
-              >
-                <td className="text-center">{idx + 1}</td>
-                <td>
-                  {field.label}
-                  {field.required && <span className="required"> *</span>}
-                  {errors[field.code] && (
-                    <div className="form-error">{errors[field.code]}</div>
-                  )}
-                </td>
-                <td>
-                  <input
-                    id={field.code}
-                    type="number"
-                    step={
-                      field.precision > 0
-                        ? Math.pow(10, -field.precision)
-                        : 1
-                    }
-                    value={values[field.code] || ''}
-                    onChange={(e) => handleChange(field.code, e.target.value)}
-                    className={`form-input ${errors[field.code] ? 'form-input-error' : ''}`}
-                    required={field.required}
-                  />
-                </td>
-                <td className="text-center text-muted">
-                  {field.unit || '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', mb: 3 }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#0d1b2a' }}>
+                <TableCell sx={{ color: 'white', fontWeight: 600, width: 50 }}>LP</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 600 }}>Opis</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 600, width: 180 }}>Wartosc</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 600, width: 90, textAlign: 'center' }}>Jednostka</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {template.fields.map((field, idx) => (
+                <TableRow
+                  key={field.code}
+                  sx={{
+                    bgcolor: errors[field.code] ? 'error.50' : idx % 2 === 0 ? 'white' : 'grey.50',
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <TableCell sx={{ textAlign: 'center', color: 'text.secondary' }}>{idx + 1}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {field.label}
+                      {field.required && <Typography component="span" color="error.main"> *</Typography>}
+                    </Typography>
+                    {errors[field.code] && (
+                      <Typography variant="caption" color="error.main">{errors[field.code]}</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      type="number"
+                      size="small"
+                      fullWidth
+                      value={values[field.code] || ''}
+                      onChange={(e) => handleChange(field.code, e.target.value)}
+                      error={!!errors[field.code]}
+                      slotProps={{
+                        htmlInput: { step: field.precision > 0 ? Math.pow(10, -field.precision) : 1 },
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ textAlign: 'center', color: 'text.secondary' }}>
+                    {field.unit || '\u2014'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         {template.commentAllowed && (
-          <div className="form-field">
-            <label htmlFor="comment" className="form-label">
-              Komentarz (opcjonalny)
-            </label>
-            <textarea
-              id="comment"
+          <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', p: 3, mb: 3 }}>
+            <TextField
+              label="Komentarz (opcjonalny)"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="form-input form-textarea"
-              maxLength={1000}
+              fullWidth
+              multiline
               rows={3}
+              slotProps={{ htmlInput: { maxLength: 1000 } }}
+              helperText={`${comment.length}/1000`}
             />
-            <span className="form-hint">{comment.length}/1000</span>
-          </div>
+          </Paper>
         )}
 
-        <div className="form-actions">
-          <button
-            type="button"
-            className="btn btn-secondary"
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
             onClick={() => navigate('/dashboard')}
           >
             Anuluj
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="btn btn-primary"
+            variant="contained"
+            startIcon={<SendIcon />}
             disabled={submitting}
           >
             {submitting ? 'Wysylanie...' : 'Zapisz i wyslij'}
-          </button>
-        </div>
+          </Button>
+        </Box>
       </form>
 
-      {showConfirm && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Potwierdzenie</h3>
-            <p>Czy na pewno chcesz wyslac oswiadczenie?</p>
-            <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setShowConfirm(false)}
-              >
-                Anuluj
-              </button>
-              <button className="btn btn-primary" onClick={handleConfirm}>
-                Zatwierdz
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Dialog open={showConfirm} onClose={() => setShowConfirm(false)}>
+        <DialogTitle>Potwierdzenie</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Czy na pewno chcesz wyslac oswiadczenie?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowConfirm(false)}>Anuluj</Button>
+          <Button onClick={handleConfirm} variant="contained">
+            Zatwierdz
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

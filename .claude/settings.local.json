@@ -23,7 +23,19 @@
       "Bash(curl:*)",
       "Bash(./gradlew bootRun)",
       "Bash(npm run:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(nginx)",
+      "Bash(conf\")",
+      "Bash(timeout 360 tail -f C:/Users/ca111/AppData/Local/Temp/2/claude/C--Users-ca111-github-pku-mat/8e8a09db-db9f-447f-95e0-6fc740c8db71/tasks/bi06rfxol.output)",
+      "Bash(timeout 360 tail -f C:/Users/ca111/AppData/Local/Temp/2/claude/C--Users-ca111-github-pku-mat/8e8a09db-db9f-447f-95e0-6fc740c8db71/tasks/bg7wd2df1.output)",
+      "Bash(docker exec:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(timeout 400 tail -f C:/Users/ca111/AppData/Local/Temp/2/claude/C--Users-ca111-github-pku-mat/8e8a09db-db9f-447f-95e0-6fc740c8db71/tasks/bfwxlztu9.output)",
+      "Bash(timeout 360 tail -f C:/Users/ca111/AppData/Local/Temp/2/claude/C--Users-ca111-github-pku-mat/8e8a09db-db9f-447f-95e0-6fc740c8db71/tasks/b42au32u5.output)",
+      "Bash(python3 -m json.tool)",
+      "Bash(git:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

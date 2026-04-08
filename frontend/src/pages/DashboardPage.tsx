@@ -2,6 +2,28 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDashboard } from '../api/declarations';
 import { DashboardResponse, PeriodDeclarationStatus } from '../types';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  Chip,
+  ToggleButton,
+  ToggleButtonGroup,
+  Badge,
+  Skeleton,
+  Alert,
+  Divider,
+  IconButton,
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import HistoryIcon from '@mui/icons-material/History';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 
 const STATUS_LABELS: Record<string, string> = {
   NIE_ZLOZONE: 'Nie zlozone',
@@ -9,10 +31,10 @@ const STATUS_LABELS: Record<string, string> = {
   ZLOZONE: 'Zlozone',
 };
 
-const STATUS_CLASSES: Record<string, string> = {
-  NIE_ZLOZONE: 'status-not-submitted',
-  ROBOCZE: 'status-draft',
-  ZLOZONE: 'status-submitted',
+const STATUS_COLORS: Record<string, 'error' | 'warning' | 'success'> = {
+  NIE_ZLOZONE: 'error',
+  ROBOCZE: 'warning',
+  ZLOZONE: 'success',
 };
 
 function formatDate(dateStr: string): string {
@@ -25,9 +47,7 @@ const PAGE_SIZE = 5;
 export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [error, setError] = useState('');
-  const [visibleFeeTypes, setVisibleFeeTypes] = useState<Set<string>>(
-    new Set()
-  );
+  const [visibleFeeTypes, setVisibleFeeTypes] = useState<string[]>([]);
   const [pageIndex, setPageIndex] = useState<Record<string, number>>({});
   const navigate = useNavigate();
 
@@ -35,21 +55,29 @@ export default function DashboardPage() {
     getDashboard()
       .then((data) => {
         setDashboard(data);
-        const allTypes = new Set(
-          data.periodDeclarations.map((pd) => pd.feeTypeCode)
+        const allTypes = Array.from(
+          new Set(data.periodDeclarations.map((pd) => pd.feeTypeCode))
         );
         setVisibleFeeTypes(allTypes);
         const initialPages: Record<string, number> = {};
-        allTypes.forEach((code) => {
-          initialPages[code] = 0;
-        });
+        allTypes.forEach((code) => (initialPages[code] = 0));
         setPageIndex(initialPages);
       })
       .catch((e) => setError(e.message));
   }, []);
 
-  if (error) return <div className="error-banner">{error}</div>;
-  if (!dashboard) return <div className="loading">Ladowanie...</div>;
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (!dashboard)
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Skeleton variant="rounded" height={60} />
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} variant="rounded" width="33%" height={200} />
+          ))}
+        </Box>
+      </Box>
+    );
 
   const feeTypes = Array.from(
     new Map(
@@ -70,26 +98,14 @@ export default function DashboardPage() {
   const missingCounts = new Map<string, number>();
   feeTypes.forEach((ft) => {
     const periods = periodsByFeeType.get(ft.code) || [];
-    const missing = periods.filter((pd) => pd.status === 'NIE_ZLOZONE').length;
-    missingCounts.set(ft.code, missing);
+    missingCounts.set(ft.code, periods.filter((pd) => pd.status === 'NIE_ZLOZONE').length);
   });
 
-  const toggleFeeType = (code: string) => {
-    setVisibleFeeTypes((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) {
-        if (next.size > 1) {
-          next.delete(code);
-        }
-      } else {
-        next.add(code);
-      }
-      return next;
-    });
+  const handleToggle = (_: unknown, newVal: string[]) => {
+    if (newVal.length > 0) setVisibleFeeTypes(newVal);
   };
 
   const getPage = (code: string) => pageIndex[code] ?? 0;
-
   const goPage = (code: string, delta: number) => {
     const periods = periodsByFeeType.get(code) || [];
     const totalPages = Math.ceil(periods.length / PAGE_SIZE);
@@ -100,35 +116,36 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h2>Oswiadczenia do zlozenia</h2>
-        <p className="dashboard-context">
-          Kontrahent: <strong>{dashboard.contractorName}</strong> (
-          {dashboard.contractorType})
-        </p>
-      </div>
+    <Box>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" sx={{ mb: 1 }}>
+          Oswiadczenia do zlozenia
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Kontrahent: <strong>{dashboard.contractorName}</strong> ({dashboard.contractorType})
+        </Typography>
+      </Box>
 
-      <div className="fee-type-toggles">
+      <ToggleButtonGroup
+        value={visibleFeeTypes}
+        onChange={handleToggle}
+        sx={{ mb: 4, flexWrap: 'wrap', gap: 1, '& .MuiToggleButton-root': { borderRadius: '24px !important', border: '2px solid', px: 3 } }}
+      >
         {feeTypes.map((ft) => {
           const missing = missingCounts.get(ft.code) || 0;
           return (
-            <button
-              key={ft.code}
-              className={`btn fee-type-toggle ${visibleFeeTypes.has(ft.code) ? 'fee-type-toggle-active' : ''}`}
-              onClick={() => toggleFeeType(ft.code)}
-            >
+            <ToggleButton key={ft.code} value={ft.code} sx={{ gap: 1 }}>
               {ft.name} ({ft.code})
               {missing > 0 && (
-                <span className="fee-type-badge">{missing}</span>
+                <Badge badgeContent={missing} color="error" sx={{ ml: 1 }} />
               )}
-            </button>
+            </ToggleButton>
           );
         })}
-      </div>
+      </ToggleButtonGroup>
 
       {feeTypes
-        .filter((ft) => visibleFeeTypes.has(ft.code))
+        .filter((ft) => visibleFeeTypes.includes(ft.code))
         .map((ft) => {
           const allPeriods = periodsByFeeType.get(ft.code) || [];
           const totalPages = Math.ceil(allPeriods.length / PAGE_SIZE);
@@ -137,47 +154,35 @@ export default function DashboardPage() {
           const visiblePeriods = allPeriods.slice(start, start + PAGE_SIZE);
 
           return (
-            <div key={ft.code} className="fee-type-region">
-              <div className="fee-type-region-header">
-                <h3 className="fee-type-region-title">
+            <Box key={ft.code} sx={{ mb: 5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" color="text.primary">
                   {ft.name} ({ft.code})
-                </h3>
+                </Typography>
                 {totalPages > 1 && (
-                  <div className="pagination">
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      disabled={page === 0}
-                      onClick={() => goPage(ft.code, -1)}
-                    >
-                      &larr; Nowsze
-                    </button>
-                    <span className="pagination-info">
-                      {start + 1}&ndash;{Math.min(start + PAGE_SIZE, allPeriods.length)} z{' '}
-                      {allPeriods.length}
-                    </span>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      disabled={page === totalPages - 1}
-                      onClick={() => goPage(ft.code, 1)}
-                    >
-                      Starsze &rarr;
-                    </button>
-                  </div>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <IconButton size="small" disabled={page === 0} onClick={() => goPage(ft.code, -1)}>
+                      <ArrowBackIcon fontSize="small" />
+                    </IconButton>
+                    <Typography variant="body2" color="text.secondary">
+                      {start + 1}&ndash;{Math.min(start + PAGE_SIZE, allPeriods.length)} z {allPeriods.length}
+                    </Typography>
+                    <IconButton size="small" disabled={page === totalPages - 1} onClick={() => goPage(ft.code, 1)}>
+                      <ArrowForwardIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
                 )}
-              </div>
-              <div className="period-cards">
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 2 }}>
                 {visiblePeriods.map((pd) => (
-                  <PeriodCard
-                    key={pd.billingPeriodId}
-                    pd={pd}
-                    navigate={navigate}
-                  />
+                  <PeriodCard key={pd.billingPeriodId} pd={pd} navigate={navigate} />
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
           );
         })}
-    </div>
+    </Box>
   );
 }
 
@@ -189,83 +194,102 @@ function PeriodCard({
   navigate: ReturnType<typeof useNavigate>;
 }) {
   const hasDeclaration = pd.status !== 'NIE_ZLOZONE';
-  const isOverdue =
-    !hasDeclaration && new Date(pd.submissionDeadline) < new Date();
+  const isOverdue = !hasDeclaration && new Date(pd.submissionDeadline) < new Date();
 
   return (
-    <div className={`period-card ${isOverdue ? 'period-card-overdue' : ''}`}>
-      <div className="period-card-header">
-        <span className="period-card-dates">
-          {formatDate(pd.startDate)} &ndash; {formatDate(pd.endDate)}
-        </span>
-        <span className={`status-badge ${STATUS_CLASSES[pd.status]}`}>
-          {STATUS_LABELS[pd.status] || pd.status}
-        </span>
-      </div>
+    <Card
+      elevation={0}
+      sx={{
+        border: '1px solid',
+        borderColor: isOverdue ? 'error.light' : 'divider',
+        borderLeft: '4px solid',
+        borderLeftColor: isOverdue ? 'error.main' : hasDeclaration ? 'success.main' : 'grey.300',
+        transition: 'all 0.2s',
+        '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' },
+      }}
+    >
+      <CardContent sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+            {formatDate(pd.startDate)} &ndash; {formatDate(pd.endDate)}
+          </Typography>
+          <Chip
+            label={STATUS_LABELS[pd.status] || pd.status}
+            color={STATUS_COLORS[pd.status] || 'default'}
+            size="small"
+            variant={pd.status === 'NIE_ZLOZONE' ? 'outlined' : 'filled'}
+          />
+        </Box>
 
-      <div className="period-card-body">
-        <div className="period-card-info">
-          <span className="period-card-label">Termin zgloszenia</span>
-          <span className={isOverdue ? 'period-card-overdue-text' : ''}>
-            {formatDate(pd.submissionDeadline)}
-          </span>
-        </div>
-        {hasDeclaration && (
-          <>
-            <div className="period-card-info">
-              <span className="period-card-label">Ostatnia wersja</span>
-              <span>
-                v
-                {(() => {
-                  const parts = pd.declarationNumber?.split('/') || [];
-                  const isKor = parts[parts.length - 1] === 'KOR';
-                  return isKor ? parts[parts.length - 2] : parts[parts.length - 1];
-                })()}
-              </span>
-              {pd.declarationNumber?.endsWith('/KOR') && (
-                <span className="period-card-correction">KOR</span>
-              )}
-            </div>
-            <div className="period-card-info">
-              <span className="period-card-label">Numer</span>
-              <span className="period-card-number" title={pd.declarationNumber || ''}>
-                {pd.declarationNumber}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className="period-card-actions">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography variant="body2" color="text.secondary">
+              Termin zgloszenia
+            </Typography>
+            <Typography variant="body2" color={isOverdue ? 'error.main' : 'text.primary'} sx={{ fontWeight: 500 }}>
+              {formatDate(pd.submissionDeadline)}
+            </Typography>
+          </Box>
+          {hasDeclaration && (
+            <>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Ostatnia wersja
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    v{(() => {
+                      const parts = pd.declarationNumber?.split('/') || [];
+                      const isKor = parts[parts.length - 1] === 'KOR';
+                      return isKor ? parts[parts.length - 2] : parts[parts.length - 1];
+                    })()}
+                  </Typography>
+                  {pd.declarationNumber?.endsWith('/KOR') && (
+                    <Chip label="KOR" size="small" color="warning" sx={{ height: 20, fontSize: '0.7rem' }} />
+                  )}
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Numer
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace', maxWidth: 180, textAlign: 'right', wordBreak: 'break-all' }}>
+                  {pd.declarationNumber}
+                </Typography>
+              </Box>
+            </>
+          )}
+        </Box>
+      </CardContent>
+      <CardActions sx={{ px: 2, pb: 2, pt: 1 }}>
         {hasDeclaration && pd.declarationId && (
-          <button
-            className="btn btn-secondary btn-sm"
+          <Button
+            size="small"
+            startIcon={<VisibilityIcon />}
             onClick={() => navigate(`/declarations/${pd.declarationId}`)}
           >
             Podglad
-          </button>
+          </Button>
         )}
         {hasDeclaration && (
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() =>
-              navigate(`/declarations/versions/${pd.billingPeriodId}`)
-            }
+          <Button
+            size="small"
+            startIcon={<HistoryIcon />}
+            onClick={() => navigate(`/declarations/versions/${pd.billingPeriodId}`)}
           >
             Wersje
-          </button>
+          </Button>
         )}
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={() =>
-            navigate(
-              `/declarations/new/${pd.feeTypeCode}/${pd.billingPeriodId}`
-            )
-          }
+        <Box sx={{ flexGrow: 1 }} />
+        <Button
+          size="small"
+          variant="contained"
+          startIcon={hasDeclaration ? <EditIcon /> : <AddIcon />}
+          onClick={() => navigate(`/declarations/new/${pd.feeTypeCode}/${pd.billingPeriodId}`)}
         >
-          {hasDeclaration ? 'Nowa wersja' : 'Zloz oswiadczenie'}
-        </button>
-      </div>
-    </div>
+          {hasDeclaration ? 'Nowa wersja' : 'Zloz'}
+        </Button>
+      </CardActions>
+    </Card>
   );
 }
