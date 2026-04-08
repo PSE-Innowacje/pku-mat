@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { getDeclaration } from '../api/declarations';
 import { DeclarationResponse } from '../types';
 
@@ -25,7 +26,62 @@ export default function DeclarationDetailPage() {
     }
   }, [id]);
 
-if (error) return <div className="error-banner">{error}</div>;
+  const exportToExcel = () => {
+    if (!declaration) return;
+
+    const infoRows = [
+      ['Numer', declaration.declarationNumber],
+      ['Status', STATUS_LABELS[declaration.status] || declaration.status],
+      [
+        'Typ oplaty',
+        `${declaration.feeTypeName} (${declaration.feeTypeCode})`,
+      ],
+      ['Kontrahent', declaration.contractorName],
+      ['Okres', `${declaration.month}/${declaration.year}`],
+      ['Wersja', declaration.version],
+      [
+        'Data zlozenia',
+        declaration.submittedAt
+          ? new Date(declaration.submittedAt).toLocaleString('pl-PL')
+          : '-',
+      ],
+      ['Skladajacy', declaration.createdBy],
+      ...(declaration.templateVersionName
+        ? [['Wersja szablonu', declaration.templateVersionName]]
+        : []),
+      [],
+      ['LP', 'Nazwa', 'Wartosc', 'Jednostka'],
+    ];
+
+    if (declaration.fields) {
+      declaration.fields.forEach((field, idx) => {
+        infoRows.push([
+          idx + 1,
+          field.label,
+          declaration.items[field.code] ?? '',
+          field.unit || '',
+        ] as (string | number)[]);
+      });
+    } else {
+      Object.entries(declaration.items).forEach(([code, value], idx) => {
+        infoRows.push([idx + 1, code, value, '']);
+      });
+    }
+
+    if (declaration.comment) {
+      infoRows.push([], ['Komentarz', declaration.comment]);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(infoRows);
+
+    ws['!cols'] = [{ wch: 5 }, { wch: 60 }, { wch: 15 }, { wch: 12 }];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Oswiadczenie');
+    XLSX.writeFile(wb, `${declaration.declarationNumber.replace(/\//g, '_')}.xlsx`);
+  };
+
+  if (error) return <div className="error-banner">{error}</div>;
   if (!declaration) return <div className="loading">Ladowanie...</div>;
 
   return (
@@ -120,6 +176,9 @@ if (error) return <div className="error-banner">{error}</div>;
           onClick={() => navigate('/dashboard')}
         >
           Zamknij
+        </button>
+        <button className="btn btn-primary" onClick={exportToExcel}>
+          Pobierz Excel
         </button>
       </div>
     </div>
