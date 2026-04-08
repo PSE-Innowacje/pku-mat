@@ -280,6 +280,14 @@ body {
   font-size: 0.9rem;
 }
 
+.table-striped tbody tr:nth-child(even) {
+  background: #f7fafc;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background: white;
+}
+
 /* === Status badges === */
 .status-badge {
   padding: 2px 8px;

@@ -219,8 +219,16 @@ class DeclarationService(
             .orElseThrow { NoSuchElementException("Nie znaleziono typu oplaty") }
         val createdByUser = userRepository.findById(declaration.createdBy)
             .orElseThrow { NoSuchElementException("Nie znaleziono uzytkownika") }
+        val contractorType = contractorTypeRepository.findById(contractor.contractorTypeId)
+            .orElseThrow { NoSuchElementException("Nie znaleziono typu kontrahenta") }
 
-        return buildDeclarationResponse(declaration, feeType.code, feeType.name, contractor.fullName, createdByUser.displayName)
+        val fields = declaration.billingPeriodId?.let { bpId ->
+            try {
+                resolveTemplate(bpId, contractorType.id!!, feeType.id!!, contractorType.code).second
+            } catch (_: Exception) { null }
+        }
+
+        return buildDeclarationResponse(declaration, feeType.code, feeType.name, contractor.fullName, createdByUser.displayName, fields)
     }
 
     fun getDeclarationsByBillingPeriod(userId: Long, billingPeriodId: Long): List<DeclarationResponse> {
@@ -254,7 +262,8 @@ class DeclarationService(
         feeTypeCode: String,
         feeTypeName: String,
         contractorName: String,
-        createdByName: String
+        createdByName: String,
+        fields: List<FormFieldDef>? = null
     ): DeclarationResponse {
         val items = declarationItemRepository.findByDeclarationId(declaration.id!!)
             .associate { it.fieldCode to (it.fieldValue ?: BigDecimal.ZERO) }
@@ -273,7 +282,8 @@ class DeclarationService(
             comment = declaration.remarks,
             submittedAt = declaration.submittedAt,
             createdBy = createdByName,
-            templateVersionName = declaration.formTemplateVersionName
+            templateVersionName = declaration.formTemplateVersionName,
+            fields = fields
         )
     }
 }

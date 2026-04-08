@@ -74,20 +74,35 @@ if (error) return <div className="error-banner">{error}</div>;
 
       <div className="detail-section">
         <h3>Dane dotyczace oplaty</h3>
-        <table className="table">
+        <table className="table table-striped">
           <thead>
             <tr>
-              <th>Kod pozycji</th>
-              <th>Wartosc</th>
+              <th style={{ width: '50px' }}>LP</th>
+              <th>Nazwa</th>
+              <th style={{ width: '150px' }}>Wartosc</th>
+              <th style={{ width: '80px' }}>Jednostka</th>
             </tr>
           </thead>
           <tbody>
-            {Object.entries(declaration.items).map(([code, value]) => (
-              <tr key={code}>
-                <td>{code}</td>
-                <td>{value}</td>
-              </tr>
-            ))}
+            {declaration.fields
+              ? declaration.fields.map((field, idx) => (
+                  <tr key={field.code}>
+                    <td className="text-center">{idx + 1}</td>
+                    <td>{field.label}</td>
+                    <td>{declaration.items[field.code] ?? '-'}</td>
+                    <td className="text-center text-muted">
+                      {field.unit || '—'}
+                    </td>
+                  </tr>
+                ))
+              : Object.entries(declaration.items).map(([code, value], idx) => (
+                  <tr key={code}>
+                    <td className="text-center">{idx + 1}</td>
+                    <td>{code}</td>
+                    <td>{value}</td>
+                    <td className="text-center text-muted">—</td>
+                  </tr>
+                ))}
           </tbody>
         </table>
       </div>

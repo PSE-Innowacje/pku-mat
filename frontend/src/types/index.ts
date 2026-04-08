@@ -64,4 +64,5 @@ export interface DeclarationResponse {
   submittedAt?: string;
   createdBy: string;
   templateVersionName?: string;
+  fields?: FormFieldDef[];
 }

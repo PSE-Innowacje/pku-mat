@@ -17,5 +17,6 @@ data class DeclarationResponse(
     val comment: String?,
     val submittedAt: Instant?,
     val createdBy: String,
-    val templateVersionName: String? = null
+    val templateVersionName: String? = null,
+    val fields: List<FormFieldDef>? = null
 )
