@@ -53,7 +53,7 @@ src/
 - `GET /api/declarations` — list all declarations for user's contractor
 - `GET /api/declarations/by-period/{billingPeriodId}` — all declaration versions for a billing period
 - `GET /api/declarations/{id}` — single declaration with items
-- `GET /api/declarations/form?feeType={code}` — form field definitions for fee type
+- `GET /api/declarations/form?feeType={code}&billingPeriodId={id}` — form field definitions (versioned template) for fee type and billing period
 - `POST /api/declarations` — submit declaration (`{feeTypeCode, billingPeriodId, items, comment}`), saves to DB with JSON in `json_content` CLOB column
 
 ## Common Commands
@@ -99,7 +99,7 @@ docker compose -f docker-compose.dev.yml down -v  # Reset DB (deletes data)
 Oracle connection: `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`. In Docker the hostname is `oracle-db` (service name, via `dev` profile); container name is `pku-oracle-db`. The `gvenzl/oracle-free:23-slim` image auto-runs scripts from mounted `db/users/` on first start. If init.sql was not auto-executed, run manually: `docker exec -i pku-oracle-db sqlplus -S pku/pku@//localhost:1521/FREEPDB1 < db/users/init.sql`.
 
 ### Tables
-`roles`, `users`, `contractor_types`, `fee_types`, `contractors`, `contractor_fee_types`, `billing_periods`, `declarations`, `declaration_items`
+`roles`, `users`, `contractor_types`, `fee_types`, `contractors`, `contractor_fee_types`, `form_templates`, `billing_periods`, `billing_period_templates`, `declarations`, `declaration_items`
 
 ### Seed Data (test credentials)
 | Login | Password | Role |
@@ -115,7 +115,7 @@ Oracle connection: `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`. In Docker the 
 - **Declaration statuses**: NIE_ZLOZONE, ROBOCZE, ZLOZONE
 - **Declaration number format**: `OSW/{fee_type}/{contractor_short}/{year}/{month}/{sub_period}/{version}[/KOR]` — `/KOR` suffix appended when submitted after billing period's `submission_deadline`
 - **Declaration versioning**: Multiple versions can be submitted per billing period. Each new submission increments the version number. Versions submitted after deadline are corrections (korekty)
-- **Form field definitions**: Hardcoded in `FormFieldConfig.kt` per fee type x contractor type combination
+- **Form templates (versioned)**: Stored in `form_templates` table as JSON (`fields_json` CLOB). Version name format: `<fee_type_code>.<contractor_type_code>.<version_number>` (e.g., `OP.OSDp.1`). Each billing period is linked to a template via `billing_period_templates` mapping table (per contractor type). Different billing periods can use different template versions. Submitted declarations record the template version used (`form_template_version_name`)
 - **JSON export**: Submitted declarations are serialized to JSON and stored in the `json_content` CLOB column of the `declarations` table
 - **Billing periods**: Defined per fee type × year × month × sub_period. OP has monthly periods (sub_period=1), OZE has 10-day periods (3 sub_periods per month). Each period has `start_date`, `end_date`, and `submission_deadline` (default: end_date + 5 days). Declarations reference a `billing_period_id`. Seed data covers 6 months (Oct 2025 – Mar 2026).
 - **Dashboard**: Shows all billing periods grouped by fee type in descending order (newest first). Fee type toggle buttons with missing declaration counts. Paginated cards (5 per page) per region. Each card shows period dates, deadline, status, last version number, and action buttons.

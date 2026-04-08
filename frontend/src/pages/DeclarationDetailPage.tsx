@@ -63,6 +63,12 @@ if (error) return <div className="error-banner">{error}</div>;
           </dd>
           <dt>Skladajacy</dt>
           <dd>{declaration.createdBy}</dd>
+          {declaration.templateVersionName && (
+            <>
+              <dt>Wersja szablonu</dt>
+              <dd>{declaration.templateVersionName}</dd>
+            </>
+          )}
         </dl>
       </div>
 

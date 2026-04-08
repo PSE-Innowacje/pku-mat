@@ -20,8 +20,8 @@ export default function DeclarationFormPage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
-    if (feeType) {
-      getFormTemplate(feeType)
+    if (feeType && billingPeriodId) {
+      getFormTemplate(feeType, parseInt(billingPeriodId, 10))
         .then((t) => {
           setTemplate(t);
           const initial: Record<string, string> = {};
@@ -30,7 +30,7 @@ export default function DeclarationFormPage() {
         })
         .catch((e) => setError(e.message));
     }
-  }, [feeType]);
+  }, [feeType, billingPeriodId]);
 
   const handleChange = (code: string, value: string) => {
     setValues((prev) => ({ ...prev, [code]: value }));
@@ -91,6 +91,9 @@ export default function DeclarationFormPage() {
       <h2>
         Skladanie oswiadczenia: {template.feeTypeName} ({template.feeTypeCode})
       </h2>
+      <p className="text-muted">
+        Wersja szablonu: <strong>{template.templateVersionName}</strong>
+      </p>
 
       <form onSubmit={handleSubmit}>
         <table className="table form-table">

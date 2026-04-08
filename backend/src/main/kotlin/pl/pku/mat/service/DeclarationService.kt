@@ -1,8 +1,9 @@
 package pl.pku.mat.service
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import pl.pku.mat.config.FormFieldDefinitions
 import pl.pku.mat.dto.*
 import pl.pku.mat.entity.DeclarationEntity
 import pl.pku.mat.entity.DeclarationItemEntity
@@ -21,9 +22,13 @@ class DeclarationService(
     private val declarationRepository: DeclarationRepository,
     private val declarationItemRepository: DeclarationItemRepository,
     private val billingPeriodRepository: BillingPeriodRepository,
+    private val billingPeriodTemplateRepository: BillingPeriodTemplateRepository,
+    private val formTemplateRepository: FormTemplateRepository,
     private val numberGenerator: DeclarationNumberGenerator,
     private val jsonExportService: JsonExportService
 ) {
+
+    private val objectMapper = jacksonObjectMapper()
 
     fun getDashboard(userId: Long): DashboardResponse {
         val contractor = contractorRepository.findByUserId(userId)
@@ -66,7 +71,7 @@ class DeclarationService(
         )
     }
 
-    fun getFormTemplate(userId: Long, feeTypeCode: String): DeclarationFormTemplate {
+    fun getFormTemplate(userId: Long, feeTypeCode: String, billingPeriodId: Long): DeclarationFormTemplate {
         val contractor = contractorRepository.findByUserId(userId)
             ?: throw NoSuchElementException("Nie znaleziono kontrahenta")
         val contractorType = contractorTypeRepository.findById(contractor.contractorTypeId)
@@ -74,15 +79,44 @@ class DeclarationService(
         val feeType = feeTypeRepository.findByCode(feeTypeCode)
             ?: throw NoSuchElementException("Nie znaleziono typu oplaty: $feeTypeCode")
 
-        val fields = FormFieldDefinitions.getFields(feeType.code, contractorType.code)
+        val resolved = resolveTemplate(billingPeriodId, contractorType.id!!, feeType.id!!, contractorType.code)
 
         return DeclarationFormTemplate(
             feeTypeCode = feeType.code,
             feeTypeName = feeType.name,
             contractorTypeCode = contractorType.code,
-            fields = fields,
-            commentAllowed = FormFieldDefinitions.isCommentAllowed(feeType.code, contractorType.code)
+            templateVersionName = resolved.first,
+            fields = resolved.second,
+            commentAllowed = true
         )
+    }
+
+    private fun resolveTemplate(
+        billingPeriodId: Long,
+        contractorTypeId: Long,
+        feeTypeId: Long,
+        contractorTypeCode: String
+    ): Pair<String, List<FormFieldDef>> {
+        val bpTemplate = billingPeriodTemplateRepository
+            .findByBillingPeriodIdAndContractorTypeId(billingPeriodId, contractorTypeId)
+
+        if (bpTemplate != null) {
+            val template = formTemplateRepository.findById(bpTemplate.formTemplateId)
+                .orElseThrow { NoSuchElementException("Nie znaleziono szablonu formularza") }
+            val fields: List<FormFieldDef> = objectMapper.readValue(template.fieldsJson)
+            return template.versionName to fields
+        }
+
+        // Fallback: use latest template for this fee type + contractor type
+        val templates = formTemplateRepository
+            .findByFeeTypeIdAndContractorTypeId(feeTypeId, contractorTypeId)
+        if (templates.isNotEmpty()) {
+            val latest = templates.maxByOrNull { it.versionNumber }!!
+            val fields: List<FormFieldDef> = objectMapper.readValue(latest.fieldsJson)
+            return latest.versionName to fields
+        }
+
+        throw NoSuchElementException("Brak szablonu formularza dla typu oplaty i kontrahenta ($contractorTypeCode)")
     }
 
     @Transactional
@@ -102,8 +136,11 @@ class DeclarationService(
             "Okres rozliczeniowy nie odpowiada typowi oplaty"
         }
 
-        // Validate fields
-        val allowedFields = FormFieldDefinitions.getFields(feeType.code, contractorType.code)
+        // Resolve template from DB
+        val (templateVersionName, allowedFields) = resolveTemplate(
+            request.billingPeriodId, contractorType.id!!, feeType.id!!, contractorType.code
+        )
+
         val allowedCodes = allowedFields.map { it.code }.toSet()
         val unknownFields = request.items.keys - allowedCodes
         require(unknownFields.isEmpty()) { "Nieznane pola: $unknownFields" }
@@ -135,7 +172,7 @@ class DeclarationService(
             DeclarationEntity(
                 declarationNumber = declarationNumber,
                 contractorId = contractor.id,
-                feeTypeId = feeType.id!!,
+                feeTypeId = feeType.id,
                 year = billingPeriod.year,
                 month = billingPeriod.month,
                 subPeriod = billingPeriod.subPeriod,
@@ -145,7 +182,8 @@ class DeclarationService(
                 createdAt = now,
                 submittedAt = now,
                 createdBy = userId,
-                billingPeriodId = billingPeriod.id
+                billingPeriodId = billingPeriod.id,
+                formTemplateVersionName = templateVersionName
             )
         )
 
@@ -234,7 +272,8 @@ class DeclarationService(
             items = items,
             comment = declaration.remarks,
             submittedAt = declaration.submittedAt,
-            createdBy = createdByName
+            createdBy = createdByName,
+            templateVersionName = declaration.formTemplateVersionName
         )
     }
 }

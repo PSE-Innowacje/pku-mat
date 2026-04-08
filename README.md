@@ -8,6 +8,7 @@ System do skladania oswiadczen rozliczeniowych w ramach oplat przesylowych i poz
 - Dashboard z kafelkami okresow rozliczeniowych pogrupowanymi wg typu oplaty, z filtrami i paginacja (5 na strone)
 - Rejestr okresow rozliczeniowych (miesieczne dla OP, dziesieciodniowe dla OZE)
 - Skladanie oswiadczen rozliczeniowych na kazdy okres (formularz tabelaryczny wg typu oplaty i kontrahenta)
+- Wersjonowanie szablonow formularzy — rozne okresy rozliczeniowe moga korzystac z roznych wersji szablonu (np. `OP.OSDp.1`, `OP.OSDp.2`)
 - Wersjonowanie oswiadczen — mozliwosc skladania kolejnych wersji na ten sam okres
 - Korekty — oswiadczenia skladane po terminie oznaczane sufiksem /KOR
 - Podglad listy wersji oswiadczen dla kazdego okresu
@@ -129,7 +130,7 @@ Wszystkie endpointy sa dostepne pod prefixem `/api/`.
 | GET | `/api/declarations` | Lista oswiadczen kontrahenta |
 | GET | `/api/declarations/by-period/{billingPeriodId}` | Lista wersji oswiadczen dla okresu |
 | GET | `/api/declarations/{id}` | Szczegoly oswiadczenia |
-| GET | `/api/declarations/form?feeType={kod}` | Szablon formularza dla typu oplaty |
+| GET | `/api/declarations/form?feeType={kod}&billingPeriodId={id}` | Szablon formularza (wersjonowany) dla typu oplaty i okresu |
 | POST | `/api/declarations` | Zlozenie oswiadczenia (`{feeTypeCode, billingPeriodId, items, comment}`) |
 
 ## Testy
@@ -214,7 +215,9 @@ Projekt korzysta z obrazu **gvenzl/oracle-free:23-slim**.
 | `fee_types` | Typy oplat (OP, OZE) |
 | `contractors` | Kontrahenci powiazani z uzytkownikami |
 | `contractor_fee_types` | Mapowanie kontrahent-oplata |
+| `form_templates` | Wersjonowane szablony formularzy (JSON z definicjami pol) |
 | `billing_periods` | Okresy rozliczeniowe (miesieczne/dziesieciodniowe) |
+| `billing_period_templates` | Mapowanie okres + typ kontrahenta -> szablon formularza |
 | `declarations` | Oswiadczenia rozliczeniowe (z JSON w kolumnie CLOB) |
 | `declaration_items` | Pozycje formularza oswiadczenia |
 

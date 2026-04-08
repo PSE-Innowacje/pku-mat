@@ -11,10 +11,11 @@ export function getDashboard(): Promise<DashboardResponse> {
 }
 
 export function getFormTemplate(
-  feeType: string
+  feeType: string,
+  billingPeriodId: number
 ): Promise<DeclarationFormTemplate> {
   return apiRequest<DeclarationFormTemplate>(
-    `/declarations/form?feeType=${encodeURIComponent(feeType)}`
+    `/declarations/form?feeType=${encodeURIComponent(feeType)}&billingPeriodId=${billingPeriodId}`
   );
 }
 

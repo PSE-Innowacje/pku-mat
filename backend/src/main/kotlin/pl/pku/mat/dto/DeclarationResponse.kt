@@ -16,5 +16,6 @@ data class DeclarationResponse(
     val items: Map<String, BigDecimal>,
     val comment: String?,
     val submittedAt: Instant?,
-    val createdBy: String
+    val createdBy: String,
+    val templateVersionName: String? = null
 )

@@ -4,6 +4,7 @@ data class DeclarationFormTemplate(
     val feeTypeCode: String,
     val feeTypeName: String,
     val contractorTypeCode: String,
+    val templateVersionName: String,
     val fields: List<FormFieldDef>,
     val commentAllowed: Boolean = true
 )

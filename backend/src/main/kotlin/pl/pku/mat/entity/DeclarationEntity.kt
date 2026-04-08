@@ -20,5 +20,6 @@ data class DeclarationEntity(
     val createdAt: Instant? = null,
     val submittedAt: Instant? = null,
     val createdBy: Long,
-    val billingPeriodId: Long? = null
+    val billingPeriodId: Long? = null,
+    val formTemplateVersionName: String? = null
 )

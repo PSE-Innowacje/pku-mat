@@ -37,6 +37,7 @@ export interface DeclarationFormTemplate {
   feeTypeCode: string;
   feeTypeName: string;
   contractorTypeCode: string;
+  templateVersionName: string;
   fields: FormFieldDef[];
   commentAllowed: boolean;
 }
@@ -62,4 +63,5 @@ export interface DeclarationResponse {
   comment?: string;
   submittedAt?: string;
   createdBy: string;
+  templateVersionName?: string;
 }

@@ -35,9 +35,12 @@ class DeclarationController(
     }
 
     @GetMapping("/form")
-    fun getFormTemplate(@RequestParam feeType: String): ResponseEntity<DeclarationFormTemplate> {
+    fun getFormTemplate(
+        @RequestParam feeType: String,
+        @RequestParam billingPeriodId: Long
+    ): ResponseEntity<DeclarationFormTemplate> {
         val userId = getCurrentUserId()
-        return ResponseEntity.ok(declarationService.getFormTemplate(userId, feeType))
+        return ResponseEntity.ok(declarationService.getFormTemplate(userId, feeType, billingPeriodId))
     }
 
     @PostMapping

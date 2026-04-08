@@ -36,6 +36,9 @@ export default function ConfirmationPage() {
         <p>
           Okres: {declaration.month}/{declaration.year}
         </p>
+        {declaration.templateVersionName && (
+          <p>Wersja szablonu: {declaration.templateVersionName}</p>
+        )}
         <p>
           Data zlozenia:{' '}
           {declaration.submittedAt

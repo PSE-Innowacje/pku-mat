@@ -18,6 +18,9 @@ class PkuMatApplicationTests {
     @MockBean lateinit var contractorFeeTypeRepository: ContractorFeeTypeRepository
     @MockBean lateinit var declarationRepository: DeclarationRepository
     @MockBean lateinit var declarationItemRepository: DeclarationItemRepository
+    @MockBean lateinit var billingPeriodRepository: BillingPeriodRepository
+    @MockBean lateinit var formTemplateRepository: FormTemplateRepository
+    @MockBean lateinit var billingPeriodTemplateRepository: BillingPeriodTemplateRepository
 
     @Test
     fun contextLoads() {
